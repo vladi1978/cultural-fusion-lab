@@ -69,6 +69,31 @@ export interface ConceptEvaluation {
   notes: string[];
 }
 
+/** Structured concept narrative — concrete proposal, not a template dump of the objective. */
+export interface ConceptNarrative {
+  whatItIs: string;
+  whoItServes: string;
+  howItWorks: string;
+  distinctive: string;
+  inspiredBy: string;
+  /** Explicit boundary between evidence-backed anchors and creative hypothesis. */
+  evidenceBoundary: string;
+}
+
+/** Cross-category link surfaced to the UI (never invent scores). */
+export interface CulturalAffinityLink {
+  id: string;
+  leftEntityId: string;
+  rightEntityId: string;
+  leftCategory: EntityCategory;
+  rightCategory: EntityCategory;
+  basis: "shared_tag" | "co_collected" | "api_reported_score";
+  sharedTags: string[];
+  note: string;
+  /** Only when an upstream verified API score was present — never invented. */
+  apiReportedScore?: number;
+}
+
 export interface FusionConcept {
   id: string;
   title: string;
@@ -77,6 +102,9 @@ export interface FusionConcept {
   culturalInfluences: CulturalEntity[];
   evidenceIds: string[];
   summary: string;
+  narrative?: ConceptNarrative;
+  /** Creative direction id from the deterministic agent (intimate/communal/systems). */
+  directionId?: "intimate" | "communal" | "systems";
   parentConceptId?: string;
   mutationNote?: string;
   /** Present when produced by the deterministic agent orchestrator. */
@@ -123,6 +151,8 @@ export interface ExplorationResult {
   clusters: CulturalCluster[];
   entities: CulturalEntity[];
   concepts: FusionConcept[];
+  /** Evidence-linked cross-category relationships (may be empty). */
+  affinities?: CulturalAffinityLink[];
   evidence: EvidenceItem[];
   generatedAt: string;
   disclaimer: string;

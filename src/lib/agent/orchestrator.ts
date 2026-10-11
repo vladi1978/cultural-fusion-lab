@@ -264,6 +264,7 @@ export async function runExplorationAgent(
     affinities,
     conflicts,
     seedKey: seedKey(request),
+    mode: request.mode,
   });
   evidence = [...evidence, ...hypothesisEvidence];
   pushStep(

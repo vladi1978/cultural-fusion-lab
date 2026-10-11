@@ -105,10 +105,12 @@ describe("concept diversity", () => {
     );
 
     // Value / audience / mechanic differ across directions
-    const positionings = concepts.map((c) => c.positioning);
-    expect(positionings.some((p) => /slow, sensory intimacy/i.test(p))).toBe(true);
-    expect(positionings.some((p) => /shared discovery/i.test(p))).toBe(true);
-    expect(positionings.some((p) => /recombinable components/i.test(p))).toBe(true);
+    const distinctives = concepts.map((c) => c.narrative?.distinctive ?? c.positioning);
+    expect(distinctives.some((p) => /intimacy|private|ritual/i.test(p))).toBe(true);
+    expect(distinctives.some((p) => /belonging|shared|commons/i.test(p))).toBe(true);
+    expect(distinctives.some((p) => /recombin|modular|kit\/platform/i.test(p))).toBe(
+      true,
+    );
   });
 
   it("rejects three near-duplicate influence sets", () => {

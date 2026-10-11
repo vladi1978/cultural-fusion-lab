@@ -24,6 +24,7 @@ import type {
 
 import { AgentTracePanel } from "./AgentTracePanel";
 import { ConceptCards } from "./ConceptCards";
+import { CulturalNetwork } from "./CulturalNetwork";
 import { DemoBanner } from "./DemoBanner";
 import { DiscoveryView } from "./DiscoveryView";
 import { EmptyState, ErrorState, LoadingState } from "./StatusBlocks";
@@ -48,6 +49,10 @@ export function LabWorkspace() {
   const [selectedConcept, setSelectedConcept] = useState<FusionConcept | null>(
     null,
   );
+  const [mutationBaseline, setMutationBaseline] = useState<FusionConcept | null>(
+    null,
+  );
+  const [lastMutation, setLastMutation] = useState<MutationResult | null>(null);
   const [highlightEvidence, setHighlightEvidence] = useState<string[]>([]);
   const [replaceEntityId, setReplaceEntityId] = useState("");
   const [newEntityId, setNewEntityId] = useState("");
@@ -100,6 +105,8 @@ export function LabWorkspace() {
     setRequest(DEFAULT_REQUEST);
     setResult(null);
     setSelectedConcept(null);
+    setMutationBaseline(null);
+    setLastMutation(null);
     setHighlightEvidence([]);
     setReplaceEntityId("");
     setNewEntityId("");
@@ -126,8 +133,11 @@ export function LabWorkspace() {
       setResult(data);
       saveResult(data);
       setSelectedConcept(null);
+      setMutationBaseline(null);
+      setLastMutation(null);
       setHighlightEvidence([]);
-      setStage("discovery");
+      // Concepts are the primary attraction after exploration.
+      setStage("concepts");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Exploration failed.");
     } finally {
@@ -138,6 +148,8 @@ export function LabWorkspace() {
   const openMutation = (concept: FusionConcept) => {
     if (!result) return;
     setSelectedConcept(concept);
+    setMutationBaseline(concept);
+    setLastMutation(null);
     const firstReplace = concept.culturalInfluences[0]?.id ?? "";
     setReplaceEntityId(firstReplace);
     const candidates = getMutationCandidates(
@@ -191,6 +203,8 @@ export function LabWorkspace() {
       setResult(nextResult);
       saveResult(nextResult);
       setSelectedConcept(data.mutatedConcept);
+      setMutationBaseline(data.originalConcept);
+      setLastMutation(data);
       setHighlightEvidence(data.mutatedConcept.evidenceIds);
       setStage("concepts");
     } catch (err) {
@@ -221,7 +235,7 @@ export function LabWorkspace() {
       ) : null}
 
       {stage === "explore" ? (
-        <div className="grid gap-5 lg:grid-cols-[1.2fr_0.8fr]">
+        <div className="grid gap-5 lg:grid-cols-[1.25fr_0.75fr]">
           <ExplorationForm
             value={request}
             onChange={setRequest}
@@ -229,17 +243,16 @@ export function LabWorkspace() {
             isLoading={isLoading}
           />
           <div className="space-y-4">
-            <EvidencePanel items={result?.evidence ?? []} />
-            {!result && !isLoading ? (
-              <EmptyState
-                title="No exploration yet"
-                description="Run Cultural Discovery to populate the network, concepts, and evidence trail."
-              />
-            ) : null}
             {isLoading ? (
               <LoadingState label="Running deterministic agent orchestration…" />
-            ) : null}
-            <AgentTracePanel trace={result?.agentTrace} />
+            ) : (
+              <EmptyState
+                title="Ready to explore"
+                description="Run Cultural Discovery to generate three differentiated fusion concepts. Evidence and agent trace stay secondary."
+              />
+            )}
+            <EvidencePanel items={result?.evidence ?? []} collapsible defaultOpen={false} />
+            <AgentTracePanel trace={result?.agentTrace} collapsible />
           </div>
         </div>
       ) : null}
@@ -248,20 +261,14 @@ export function LabWorkspace() {
         isLoading ? (
           <LoadingState />
         ) : result ? (
-          <div className="grid gap-5 lg:grid-cols-[1.35fr_0.65fr]">
-            <DiscoveryView
-              clusters={result.clusters}
-              entities={result.entities}
-              onContinue={() => goTo("concepts")}
-            />
-            <div className="space-y-4">
-              <EvidencePanel
-                items={result.evidence}
-                highlightIds={highlightEvidence}
-              />
-              <AgentTracePanel trace={result.agentTrace} />
-            </div>
-          </div>
+          <DiscoveryView
+            clusters={result.clusters}
+            entities={result.entities}
+            affinities={result.affinities}
+            evidence={result.evidence}
+            mode={result.mode}
+            onContinue={() => goTo("concepts")}
+          />
         ) : (
           <EmptyState
             title="Discovery is empty"
@@ -272,7 +279,7 @@ export function LabWorkspace() {
 
       {stage === "concepts" ? (
         result ? (
-          <div className="grid gap-5 lg:grid-cols-[1.35fr_0.65fr]">
+          <div className="space-y-8">
             <ConceptCards
               concepts={result.concepts}
               selectedId={selectedConcept?.id}
@@ -280,47 +287,124 @@ export function LabWorkspace() {
               onOpenMutation={openMutation}
               onSelectEvidence={setHighlightEvidence}
             />
-            <div className="space-y-4">
+
+            {lastMutation && mutationBaseline ? (
+              <section className="panel p-5 sm:p-6">
+                <h3 className="font-display text-xl text-white">
+                  Latest mutation comparison
+                </h3>
+                <p className="mt-1 text-sm text-[var(--text-muted)]">
+                  Before/after of the cultural influence swap and narrative
+                  evolution.
+                </p>
+                <div className="mt-4 grid gap-4 md:grid-cols-2">
+                  <div className="rounded-2xl border border-[var(--line)] bg-[rgba(5,8,16,0.4)] p-4">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--text-dim)]">
+                      Before
+                    </p>
+                    <p className="mt-1 font-display text-lg text-white">
+                      {mutationBaseline.title}
+                    </p>
+                    <p className="mt-2 text-xs leading-relaxed text-[var(--text-muted)]">
+                      {mutationBaseline.narrative?.whatItIs ??
+                        mutationBaseline.summary}
+                    </p>
+                    <ul className="mt-3 space-y-1">
+                      {mutationBaseline.culturalInfluences.map((e) => (
+                        <li key={e.id} className="text-xs text-[var(--text-dim)]">
+                          {e.category} · {e.name}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div className="rounded-2xl border border-[rgba(34,211,238,0.35)] bg-[rgba(34,211,238,0.08)] p-4">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#a5f3fc]">
+                      After
+                    </p>
+                    <p className="mt-1 font-display text-lg text-white">
+                      {lastMutation.mutatedConcept.title}
+                    </p>
+                    <p className="mt-2 text-xs leading-relaxed text-[var(--text-muted)]">
+                      {lastMutation.mutatedConcept.narrative?.whatItIs ??
+                        lastMutation.mutatedConcept.summary}
+                    </p>
+                    <p className="mt-3 text-xs text-[#fde68a]">
+                      {lastMutation.mutatedConcept.mutationNote}
+                    </p>
+                  </div>
+                </div>
+              </section>
+            ) : null}
+
+            <div className="space-y-3">
+              <div className="flex flex-wrap items-end justify-between gap-3">
+                <div>
+                  <h3 className="font-display text-xl text-white">
+                    Cultural neighborhood
+                  </h3>
+                  <p className="text-sm text-[var(--text-muted)]">
+                    Supporting entities and provenance-labeled relationships.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  className="btn btn-ghost !px-3 !py-2 text-xs"
+                  onClick={() => goTo("discovery")}
+                >
+                  Open full discovery
+                </button>
+              </div>
+              <CulturalNetwork
+                entities={result.entities}
+                affinities={result.affinities}
+                evidence={result.evidence}
+                mode={result.mode}
+              />
+            </div>
+
+            <div className="grid gap-4 lg:grid-cols-2">
               <EvidencePanel
                 items={result.evidence}
                 highlightIds={highlightEvidence}
+                collapsible
+                defaultOpen={highlightEvidence.length > 0}
               />
-              <AgentTracePanel trace={result.agentTrace} />
+              <AgentTracePanel trace={result.agentTrace} collapsible />
             </div>
           </div>
         ) : (
           <EmptyState
             title="No concepts yet"
-            description="Complete discovery first to generate fusion concepts."
+            description="Run an exploration to generate fusion concepts."
           />
         )
       ) : null}
 
       {stage === "mutation" ? (
         result && selectedConcept ? (
-          <div className="grid gap-5 lg:grid-cols-[1.35fr_0.65fr]">
-            <div className="space-y-4">
-              {isLoading ? (
-                <LoadingState label="Mutating and re-evaluating concept…" />
-              ) : null}
-              <MutationStudio
-                concept={selectedConcept}
-                entities={result.entities}
-                replaceEntityId={replaceEntityId}
-                newEntityId={newEntityId}
-                onReplaceChange={setReplaceEntityId}
-                onNewChange={setNewEntityId}
-                onMutate={runMutation}
-                onBack={() => goTo("concepts")}
-                isLoading={isLoading}
-              />
-            </div>
-            <div className="space-y-4">
+          <div className="space-y-4">
+            {isLoading ? (
+              <LoadingState label="Mutating and re-evaluating concept…" />
+            ) : null}
+            <MutationStudio
+              concept={selectedConcept}
+              entities={result.entities}
+              replaceEntityId={replaceEntityId}
+              newEntityId={newEntityId}
+              onReplaceChange={setReplaceEntityId}
+              onNewChange={setNewEntityId}
+              onMutate={runMutation}
+              onBack={() => goTo("concepts")}
+              isLoading={isLoading}
+            />
+            <div className="grid gap-4 lg:grid-cols-2">
               <EvidencePanel
                 items={result.evidence}
                 highlightIds={highlightEvidence}
+                collapsible
+                defaultOpen={false}
               />
-              <AgentTracePanel trace={result.agentTrace} />
+              <AgentTracePanel trace={result.agentTrace} collapsible />
             </div>
           </div>
         ) : (

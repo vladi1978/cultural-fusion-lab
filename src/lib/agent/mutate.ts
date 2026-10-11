@@ -1,7 +1,12 @@
 import type { CulturalEntity, EvidenceItem, FusionConcept } from "../types";
+import {
+  buildConceptNarrative,
+  composePositioning,
+} from "./concepts";
 import { evaluateSingleConcept } from "./evaluate";
 import type {
   ConceptClaim,
+  CreativeDirectionId,
   CulturalEvidenceSource,
   EvaluatedConcept,
   InterpretedObjective,
@@ -100,6 +105,21 @@ export async function mutateAndReevaluate(options: {
     .filter((e) => e.relatedEntityIds?.includes(incoming!.id))
     .map((e) => e.id);
 
+  const directionId = (
+    "directionId" in concept && concept.directionId
+      ? concept.directionId
+      : "intimate"
+  ) as CreativeDirectionId;
+
+  const narrative = buildConceptNarrative({
+    interpreted,
+    direction: directionId,
+    influences: newInfluences,
+    modeLabel: options.mutationRequest.mode,
+  });
+  narrative.howItWorks = `${narrative.howItWorks} Mutation shift: ${outgoing.name} exits; ${incoming.name} becomes the new cultural hinge.`;
+  narrative.evidenceBoundary = `${narrative.evidenceBoundary} Variant narrative remains a hypothesis after the influence swap.`;
+
   const claims: ConceptClaim[] = [
     {
       id: `claim-mut-ref-${incoming.id.slice(0, 8)}`,
@@ -112,7 +132,7 @@ export async function mutateAndReevaluate(options: {
     },
     {
       id: `claim-mut-pos`,
-      statement: `Positioning hypothesis updated around ${incoming.name}.`,
+      statement: `Positioning hypothesis updated: ${narrative.whatItIs}`,
       evidenceIds: [hypEvidence.id, mutEvidence.id],
       kind: "positioning_hypothesis",
     },
@@ -132,7 +152,7 @@ export async function mutateAndReevaluate(options: {
     id: `${concept.id}-mut-${incoming.id.slice(0, 8)}`,
     title: `${concept.title} · ${incoming.name.split(" ")[0]} Variant`,
     parentConceptId: concept.id,
-    mutationNote: `Swapped ${outgoing.name} → ${incoming.name}`,
+    mutationNote: `Swapped ${outgoing.name} (${outgoing.category}) → ${incoming.name} (${incoming.category}). Concept mechanics and audience framing were re-authored around the new hinge; evidence provenance was preserved and re-evaluated.`,
     culturalInfluences: newInfluences,
     evidenceIds: unique([
       ...concept.evidenceIds,
@@ -140,8 +160,10 @@ export async function mutateAndReevaluate(options: {
       hypEvidence.id,
       ...extraEvidence.map((e) => e.id),
     ]),
-    positioning: `${concept.positioning} Mutation emphasizes ${incoming.name} as the new cultural hinge.`,
-    summary: `Variant of “${concept.title}” with ${incoming.name} replacing ${outgoing.name}.`,
+    positioning: composePositioning(narrative),
+    summary: narrative.whatItIs,
+    narrative,
+    directionId,
     claims,
     affinityIds:
       "affinityIds" in concept && Array.isArray(concept.affinityIds)

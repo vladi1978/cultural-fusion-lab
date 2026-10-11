@@ -2,26 +2,14 @@ import { ListTree } from "lucide-react";
 
 import type { AgentTraceSummary } from "@/lib/types";
 
-export function AgentTracePanel({ trace }: { trace?: AgentTraceSummary }) {
-  if (!trace) {
-    return (
-      <aside className="panel p-5">
-        <h3 className="font-display text-lg text-white">Agent Trace</h3>
-        <p className="mt-2 text-sm text-[var(--text-muted)]">
-          Workflow steps appear here after an exploration run.
-        </p>
-      </aside>
-    );
-  }
+import { CollapsiblePanel } from "./CollapsiblePanel";
 
+function TraceBody({ trace }: { trace: AgentTraceSummary }) {
   return (
-    <aside className="panel p-5">
-      <div className="mb-3 flex items-center justify-between gap-2">
-        <h3 className="font-display text-lg text-white">Agent Trace</h3>
-        <span className="badge badge-violet">{trace.engine}</span>
-      </div>
+    <div>
       <p className="mb-3 text-xs text-[var(--text-dim)]">
-        Deterministic orchestration (no paid LLM). Affinities: {trace.affinityCount}.
+        Deterministic orchestration (no paid LLM). Affinities:{" "}
+        {trace.affinityCount}.
       </p>
       {trace.warnings.length > 0 ? (
         <ul className="mb-3 space-y-1">
@@ -62,6 +50,63 @@ export function AgentTracePanel({ trace }: { trace?: AgentTraceSummary }) {
           </li>
         ))}
       </ol>
-    </aside>
+    </div>
+  );
+}
+
+export function AgentTracePanel({
+  trace,
+  collapsible = false,
+  defaultOpen = false,
+}: {
+  trace?: AgentTraceSummary;
+  collapsible?: boolean;
+  defaultOpen?: boolean;
+}) {
+  if (!trace) {
+    if (collapsible) {
+      return (
+        <CollapsiblePanel
+          title="Agent Trace"
+          subtitle="Workflow steps appear after an exploration run."
+          defaultOpen={false}
+        >
+          <p className="text-sm text-[var(--text-muted)]">
+            No agent trace yet.
+          </p>
+        </CollapsiblePanel>
+      );
+    }
+    return (
+      <aside className="panel p-5">
+        <h3 className="font-display text-lg text-white">Agent Trace</h3>
+        <p className="mt-2 text-sm text-[var(--text-muted)]">
+          Workflow steps appear here after an exploration run.
+        </p>
+      </aside>
+    );
+  }
+
+  if (!collapsible) {
+    return (
+      <aside className="panel p-5">
+        <div className="mb-3 flex items-center justify-between gap-2">
+          <h3 className="font-display text-lg text-white">Agent Trace</h3>
+          <span className="badge badge-violet">{trace.engine}</span>
+        </div>
+        <TraceBody trace={trace} />
+      </aside>
+    );
+  }
+
+  return (
+    <CollapsiblePanel
+      title="Agent Trace"
+      badge={trace.engine}
+      subtitle="Technical workflow details — collapsed by default so concepts stay primary."
+      defaultOpen={defaultOpen}
+    >
+      <TraceBody trace={trace} />
+    </CollapsiblePanel>
   );
 }
