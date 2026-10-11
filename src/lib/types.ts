@@ -54,6 +54,21 @@ export interface CulturalCluster {
   entities: CulturalEntity[];
 }
 
+export interface ConceptClaim {
+  id: string;
+  statement: string;
+  evidenceIds: string[];
+  kind: "cultural_reference" | "positioning_hypothesis" | "affinity_inference";
+}
+
+export interface ConceptEvaluation {
+  relevance: number;
+  originality: number;
+  evidenceCoverage: number;
+  overall: number;
+  notes: string[];
+}
+
 export interface FusionConcept {
   id: string;
   title: string;
@@ -64,6 +79,10 @@ export interface FusionConcept {
   summary: string;
   parentConceptId?: string;
   mutationNote?: string;
+  /** Present when produced by the deterministic agent orchestrator. */
+  claims?: ConceptClaim[];
+  evaluation?: ConceptEvaluation;
+  affinityIds?: string[];
 }
 
 export interface MutationRequest {
@@ -77,6 +96,27 @@ export interface MutationRequest {
   evidence: EvidenceItem[];
 }
 
+export interface AgentStepTrace {
+  id: string;
+  title: string;
+  status: "ok" | "empty" | "error";
+  detail: string;
+  at: string;
+}
+
+export interface AgentTraceSummary {
+  engine: string;
+  mode: LabMode;
+  steps: AgentStepTrace[];
+  affinityCount: number;
+  warnings: string[];
+  relevance?: {
+    kept: number;
+    rejected: number;
+    intentTerms: string[];
+  };
+}
+
 export interface ExplorationResult {
   mode: LabMode;
   request: ExplorationRequest;
@@ -86,6 +126,8 @@ export interface ExplorationResult {
   evidence: EvidenceItem[];
   generatedAt: string;
   disclaimer: string;
+  /** Deterministic agent workflow trace (when orchestrator ran). */
+  agentTrace?: AgentTraceSummary;
 }
 
 export interface MutationResult {
@@ -95,6 +137,7 @@ export interface MutationResult {
   evidence: EvidenceItem[];
   generatedAt: string;
   disclaimer: string;
+  agentTrace?: AgentTraceSummary;
 }
 
 export interface ApiErrorBody {

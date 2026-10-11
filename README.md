@@ -40,6 +40,8 @@ Open [http://localhost:3000](http://localhost:3000).
 | `npm run start` | Serve production build |
 | `npm run lint` | ESLint |
 | `npm run typecheck` | TypeScript `--noEmit` |
+| `npm test` | Unit tests (Vitest + labeled mock Qloo fixtures) |
+| `npm run eval` | Offline evaluation harness + markdown report (`eval-reports/`) |
 
 ## Architecture
 
@@ -47,31 +49,55 @@ Open [http://localhost:3000](http://localhost:3000).
 src/
   app/
     page.tsx                 # Lab workspace entry
-    api/explore/route.ts     # Exploration API (demo + live scaffold)
-    api/mutate/route.ts      # Mutation API (demo + live scaffold)
-  components/                # UI: hero, form, discovery, concepts, mutation, evidence
+    api/explore/route.ts     # Exploration API (demo + gated live)
+    api/mutate/route.ts      # Mutation API (demo + gated live)
+    api/qloo/status/route.ts # Live readiness status (no secrets)
+  components/                # UI: hero, form, discovery, concepts, mutation, evidence, agent trace
   lib/
     types.ts                 # Domain interfaces
     demo-data.ts             # Deterministic fictional demo engine
     storage.ts               # localStorage helpers
+    agent/                   # Deterministic orchestration (no paid LLM)
+      orchestrator.ts        # interpret → plan → collect → affinities → concepts → evaluate → mutate
+      sources/               # demo + gated Qloo evidence sources
+      fixtures/              # Labeled mock fixtures for offline tests
     qloo/
-      client.ts              # Server-only HTTP helper (auth header placeholder)
-      adapter.ts             # exploreWithQloo / mutateWithQloo stubs (TODO)
+      schemas.ts             # Documented request/response types + parsers
+      client.ts              # Server-only HTTP (X-Api-Key, timeout, rate-limit)
+      endpoints.ts           # GET /search, GET /v2/tags, GET /v2/insights
+      mapper.ts              # Qloo entities → Cultural Fusion Lab domain
+      live-gate.ts           # Live Mode lock until auth succeeds
+      adapter.ts             # exploreWithQloo / mutateWithQloo
+      fixtures/              # Labeled mock responses for unit tests
 ```
 
 ### Modes
 
 | Mode | Behavior |
 | --- | --- |
-| **Demo** (default) | Interactive end-to-end walkthrough using labeled mock data. No external API calls. |
-| **Live** | Requires `QLOO_API_KEY`. Adapter throws `501 Not Implemented` until Qloo docs/endpoints are validated. |
+| **Demo** (default) | Interactive end-to-end walkthrough using labeled fictional sample data. No external API calls. |
+| **Live** | Locked closed until `QLOO_API_KEY` is set, `QLOO_LIVE_ENABLED=true`, and a server-side auth probe succeeds. Not claimed working until tested with a real key. |
 
 ### Environment
 
 See [`.env.example`](./.env.example):
 
 - `QLOO_API_KEY` — server only; never hardcode or expose to the client  
-- `QLOO_BASE_URL` — defaults to `https://hackathon.api.qloo.com`
+- `QLOO_BASE_URL` — defaults to `https://hackathon.api.qloo.com`  
+- `QLOO_LIVE_ENABLED` — must be `true` to unlock Live Mode after auth succeeds  
+- `QLOO_REQUEST_TIMEOUT_MS` — optional HTTP timeout (default `12000`)
+
+### Documented Qloo endpoints used by the integration layer
+
+Verified from official sources (not invented):
+
+| Endpoint | Method | Auth | Source |
+| --- | --- | --- | --- |
+| `/search?query=&type=` | GET | `X-Api-Key` | Qloo Hackathon Devpost notice |
+| `/v2/tags` | GET | `X-Api-Key` | docs.qloo.com Tags OpenAPI |
+| `/v2/insights` | GET | `X-Api-Key` | docs.qloo.com Insights OpenAPI / API Onboarding |
+
+Auth header name confirmed as **`X-Api-Key`** (not Bearer) via docs.qloo.com API Onboarding and the hackathon notice.
 
 ## Design notes
 
@@ -85,19 +111,28 @@ See [`.env.example`](./.env.example):
 
 - No database, auth, or multi-user sync  
 - No paid LLM API usage  
-- Live Qloo integration is **scaffolded only** — endpoint schemas are not invented  
+- Live Qloo calls are **implemented but unverified** against a real hackathon key (key still pending)  
 - Demo affinities and concepts are **not** predictive purchase intent, virality scores, or scientific consumer simulation  
 - Free hosting deployment is subject to provider eligibility and terms
 
-## Qloo integration TODOs
+## Qloo integration status
 
-1. Obtain hackathon API access and confirm auth header format (current client uses a Bearer placeholder).  
-2. Validate Taste Graph discovery endpoints and parameter schemas from official docs.  
-3. Implement `exploreWithQloo` in `src/lib/qloo/adapter.ts` — map `ExplorationRequest` → documented query, normalize entities/clusters.  
-4. Implement `mutateWithQloo` — adjacent-entity / replacement lookup when available.  
-5. Emit `EvidenceItem` with `source: "verified_api"` **only** for fields returned by Qloo; keep concept copy as `agent_hypothesis`.  
-6. Add integration tests against sandbox responses once contracts are stable.  
-7. Fail closed if the API is unavailable — never substitute mock data silently in live mode.
+**Implemented (unit-tested with labeled mocks):**
+
+1. `X-Api-Key` auth, timeouts, rate-limit (`429` + `Retry-After`), safe error mapping  
+2. Typed `searchEntities`, `searchTags`, `getInsights`  
+3. `exploreWithQloo` / `mutateWithQloo` adapters with evidence provenance  
+4. Live Mode gate (`QLOO_LIVE_ENABLED` + in-process auth probe)  
+5. `GET /api/qloo/status` readiness endpoint (no secrets)  
+6. Deterministic agent orchestrator (interpret → plan → collect → affinities → concepts → evaluate → mutate) with claim→evidence tracing and no paid LLM  
+7. Offline evaluation harness (`src/lib/eval`) with 17 synthetic scenarios, objective validators, subjective heuristics (separated), and markdown reporting
+
+**Blocked until a real API key arrives:**
+
+1. Successful auth probe against `https://hackathon.api.qloo.com`  
+2. Enabling `QLOO_LIVE_ENABLED=true` on the server  
+3. End-to-end live exploration/mutation verification  
+4. Confirming hackathon entitlement coverage for `/search`, `/v2/tags`, and `/v2/insights`
 
 ## Deployment
 

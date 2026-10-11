@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 
-import { generateDemoExploration } from "@/lib/demo-data";
 import {
-  exploreWithQloo,
-  isQlooConfigured,
-  QlooNotConfiguredError,
-  QlooNotImplementedError,
-} from "@/lib/qloo/adapter";
+  AgentError,
+  runExplorationAgent,
+} from "@/lib/agent";
+import { isQlooConfigured } from "@/lib/qloo/adapter";
+import { QlooError, toApiErrorPayload } from "@/lib/qloo/errors";
+import { isLiveModeAllowed } from "@/lib/qloo/live-gate";
 import type { ApiErrorBody, ExplorationRequest, OutputCategory } from "@/lib/types";
 
 function isOutputCategory(value: unknown): value is OutputCategory {
@@ -31,7 +31,11 @@ function parseRequest(body: unknown): ExplorationRequest | null {
       : undefined;
   const mode = data.mode === "live" ? "live" : "demo";
 
-  if (!creativeObjective || !culturalInterest || !isOutputCategory(data.outputCategory)) {
+  if (
+    !creativeObjective ||
+    !culturalInterest ||
+    !isOutputCategory(data.outputCategory)
+  ) {
     return null;
   }
 
@@ -42,6 +46,29 @@ function parseRequest(body: unknown): ExplorationRequest | null {
     outputCategory: data.outputCategory,
     mode,
   };
+}
+
+function agentErrorResponse(err: AgentError) {
+  const status =
+    err.code === "VALIDATION" ||
+    err.code === "MUTATION_INVALID" ||
+    err.code === "CLAIM_UNGROUNDED" ||
+    err.code === "MISSING_CONCEPT"
+      ? 400
+      : err.code === "LIVE_DISABLED"
+        ? 503
+        : err.code === "EMPTY_EVIDENCE" || err.code === "IRRELEVANT_EVIDENCE"
+          ? 422
+          : 502;
+
+  return NextResponse.json<ApiErrorBody>(
+    {
+      error: err.message,
+      code: `AGENT_${err.code}`,
+      details: err.details,
+    },
+    { status },
+  );
 }
 
 export async function POST(request: Request) {
@@ -67,50 +94,54 @@ export async function POST(request: Request) {
     );
   }
 
-  if (exploration.mode === "demo") {
-    const result = generateDemoExploration(exploration);
-    return NextResponse.json(result);
-  }
-
-  // Live mode scaffold — fail closed until Qloo integration is validated.
-  if (!isQlooConfigured()) {
-    return NextResponse.json<ApiErrorBody>(
-      {
-        error:
-          "Live mode requires QLOO_API_KEY on the server. Use Demo Mode for the hackathon MVP walkthrough.",
-        code: "QLOO_NOT_CONFIGURED",
-      },
-      { status: 503 },
-    );
-  }
-
   try {
-    const result = await exploreWithQloo(exploration);
-    return NextResponse.json(result);
-  } catch (err) {
-    if (err instanceof QlooNotImplementedError) {
+    if (exploration.mode === "demo") {
+      const result = await runExplorationAgent(exploration);
+      return NextResponse.json(result);
+    }
+
+    // Live Mode remains disabled until key + opt-in + successful auth probe.
+    if (!isLiveModeAllowed()) {
+      const reason = !isQlooConfigured()
+        ? "Live Mode requires QLOO_API_KEY on the server. API key is still pending — use Demo Mode."
+        : "Live Mode is disabled until QLOO_LIVE_ENABLED=true and Qloo authentication succeeds. Use Demo Mode.";
+
       return NextResponse.json<ApiErrorBody>(
         {
-          error: err.message,
-          code: "QLOO_NOT_IMPLEMENTED",
+          error: reason,
+          code: "QLOO_LIVE_DISABLED",
           details:
-            "Switch to Demo Mode for a full interactive walkthrough while Qloo endpoints are validated.",
+            "The agent orchestrator is ready, but live Qloo collection is locked until a real key authenticates.",
         },
-        { status: 501 },
-      );
-    }
-    if (err instanceof QlooNotConfiguredError) {
-      return NextResponse.json<ApiErrorBody>(
-        { error: err.message, code: "QLOO_NOT_CONFIGURED" },
         { status: 503 },
       );
     }
+
+    const { createQlooSource } = await import(
+      "@/lib/agent/sources/qloo-source"
+    );
+    const result = await runExplorationAgent(exploration, {
+      source: createQlooSource(),
+    });
+    return NextResponse.json(result);
+  } catch (err) {
+    if (err instanceof AgentError) {
+      return agentErrorResponse(err);
+    }
+    const payload = toApiErrorPayload(
+      err instanceof QlooError
+        ? err
+        : new QlooError("UPSTREAM", "Unexpected error during exploration.", {
+            cause: err,
+          }),
+    );
     return NextResponse.json<ApiErrorBody>(
       {
-        error: "Unexpected error during exploration.",
-        code: "INTERNAL_ERROR",
+        error: payload.error,
+        code: payload.code,
+        details: payload.details,
       },
-      { status: 500 },
+      { status: payload.status },
     );
   }
 }

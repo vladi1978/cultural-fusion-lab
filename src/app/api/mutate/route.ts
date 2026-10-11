@@ -1,12 +1,9 @@
 import { NextResponse } from "next/server";
 
-import { generateDemoMutation } from "@/lib/demo-data";
-import {
-  isQlooConfigured,
-  mutateWithQloo,
-  QlooNotConfiguredError,
-  QlooNotImplementedError,
-} from "@/lib/qloo/adapter";
+import { AgentError, runMutationAgent } from "@/lib/agent";
+import { isQlooConfigured } from "@/lib/qloo/adapter";
+import { QlooError, toApiErrorPayload } from "@/lib/qloo/errors";
+import { isLiveModeAllowed } from "@/lib/qloo/live-gate";
 import type {
   ApiErrorBody,
   CulturalEntity,
@@ -70,6 +67,27 @@ function parseMutation(body: unknown): MutationRequest | null {
   };
 }
 
+function agentErrorResponse(err: AgentError) {
+  const status =
+    err.code === "VALIDATION" ||
+    err.code === "MUTATION_INVALID" ||
+    err.code === "CLAIM_UNGROUNDED" ||
+    err.code === "MISSING_CONCEPT"
+      ? 400
+      : err.code === "LIVE_DISABLED"
+        ? 503
+        : 502;
+
+  return NextResponse.json<ApiErrorBody>(
+    {
+      error: err.message,
+      code: `AGENT_${err.code}`,
+      details: err.details,
+    },
+    { status },
+  );
+}
+
 export async function POST(request: Request) {
   let json: unknown;
   try {
@@ -93,55 +111,53 @@ export async function POST(request: Request) {
     );
   }
 
-  if (mutation.mode === "demo") {
-    try {
-      const result = generateDemoMutation(mutation);
-      return NextResponse.json(result);
-    } catch (err) {
-      return NextResponse.json<ApiErrorBody>(
-        {
-          error: err instanceof Error ? err.message : "Mutation failed.",
-          code: "MUTATION_ERROR",
-        },
-        { status: 400 },
-      );
-    }
-  }
-
-  if (!isQlooConfigured()) {
-    return NextResponse.json<ApiErrorBody>(
-      {
-        error:
-          "Live mode requires QLOO_API_KEY on the server. Use Demo Mode for mutations.",
-        code: "QLOO_NOT_CONFIGURED",
-      },
-      { status: 503 },
-    );
-  }
-
   try {
-    const result = await mutateWithQloo(mutation);
-    return NextResponse.json(result);
-  } catch (err) {
-    if (err instanceof QlooNotImplementedError) {
+    if (mutation.mode === "demo") {
+      const result = await runMutationAgent(mutation);
+      return NextResponse.json(result);
+    }
+
+    if (!isLiveModeAllowed()) {
+      const reason = !isQlooConfigured()
+        ? "Live Mode requires QLOO_API_KEY on the server. API key is still pending — use Demo Mode."
+        : "Live Mode is disabled until QLOO_LIVE_ENABLED=true and Qloo authentication succeeds. Use Demo Mode.";
+
       return NextResponse.json<ApiErrorBody>(
         {
-          error: err.message,
-          code: "QLOO_NOT_IMPLEMENTED",
-          details: "Use Demo Mode until Qloo mutation endpoints are validated.",
+          error: reason,
+          code: "QLOO_LIVE_DISABLED",
+          details:
+            "Agent mutation orchestration is ready, but live Qloo access remains locked.",
         },
-        { status: 501 },
-      );
-    }
-    if (err instanceof QlooNotConfiguredError) {
-      return NextResponse.json<ApiErrorBody>(
-        { error: err.message, code: "QLOO_NOT_CONFIGURED" },
         { status: 503 },
       );
     }
+
+    const { createQlooSource } = await import(
+      "@/lib/agent/sources/qloo-source"
+    );
+    const result = await runMutationAgent(mutation, {
+      source: createQlooSource(),
+    });
+    return NextResponse.json(result);
+  } catch (err) {
+    if (err instanceof AgentError) {
+      return agentErrorResponse(err);
+    }
+    const payload = toApiErrorPayload(
+      err instanceof QlooError
+        ? err
+        : new QlooError("UPSTREAM", "Unexpected error during mutation.", {
+            cause: err,
+          }),
+    );
     return NextResponse.json<ApiErrorBody>(
-      { error: "Unexpected error during mutation.", code: "INTERNAL_ERROR" },
-      { status: 500 },
+      {
+        error: payload.error,
+        code: payload.code,
+        details: payload.details,
+      },
+      { status: payload.status },
     );
   }
 }

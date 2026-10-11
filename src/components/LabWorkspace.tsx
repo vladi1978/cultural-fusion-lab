@@ -22,6 +22,7 @@ import type {
   MutationResult,
 } from "@/lib/types";
 
+import { AgentTracePanel } from "./AgentTracePanel";
 import { ConceptCards } from "./ConceptCards";
 import { DemoBanner } from "./DemoBanner";
 import { DiscoveryView } from "./DiscoveryView";
@@ -184,6 +185,7 @@ export function LabWorkspace() {
         evidence: data.evidence,
         generatedAt: data.generatedAt,
         disclaimer: data.disclaimer,
+        agentTrace: data.agentTrace ?? result.agentTrace,
       };
 
       setResult(nextResult);
@@ -235,8 +237,9 @@ export function LabWorkspace() {
               />
             ) : null}
             {isLoading ? (
-              <LoadingState label="Building a deterministic demo cultural neighborhood…" />
+              <LoadingState label="Running deterministic agent orchestration…" />
             ) : null}
+            <AgentTracePanel trace={result?.agentTrace} />
           </div>
         </div>
       ) : null}
@@ -251,10 +254,13 @@ export function LabWorkspace() {
               entities={result.entities}
               onContinue={() => goTo("concepts")}
             />
-            <EvidencePanel
-              items={result.evidence}
-              highlightIds={highlightEvidence}
-            />
+            <div className="space-y-4">
+              <EvidencePanel
+                items={result.evidence}
+                highlightIds={highlightEvidence}
+              />
+              <AgentTracePanel trace={result.agentTrace} />
+            </div>
           </div>
         ) : (
           <EmptyState
@@ -274,10 +280,13 @@ export function LabWorkspace() {
               onOpenMutation={openMutation}
               onSelectEvidence={setHighlightEvidence}
             />
-            <EvidencePanel
-              items={result.evidence}
-              highlightIds={highlightEvidence}
-            />
+            <div className="space-y-4">
+              <EvidencePanel
+                items={result.evidence}
+                highlightIds={highlightEvidence}
+              />
+              <AgentTracePanel trace={result.agentTrace} />
+            </div>
           </div>
         ) : (
           <EmptyState
@@ -292,7 +301,7 @@ export function LabWorkspace() {
           <div className="grid gap-5 lg:grid-cols-[1.35fr_0.65fr]">
             <div className="space-y-4">
               {isLoading ? (
-                <LoadingState label="Generating conceptual variant…" />
+                <LoadingState label="Mutating and re-evaluating concept…" />
               ) : null}
               <MutationStudio
                 concept={selectedConcept}
@@ -306,10 +315,13 @@ export function LabWorkspace() {
                 isLoading={isLoading}
               />
             </div>
-            <EvidencePanel
-              items={result.evidence}
-              highlightIds={highlightEvidence}
-            />
+            <div className="space-y-4">
+              <EvidencePanel
+                items={result.evidence}
+                highlightIds={highlightEvidence}
+              />
+              <AgentTracePanel trace={result.agentTrace} />
+            </div>
           </div>
         ) : (
           <EmptyState

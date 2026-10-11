@@ -27,14 +27,16 @@ export function ConceptCards({
       <div>
         <h2 className="font-display text-2xl text-white">Fusion Concepts</h2>
         <p className="mt-1 text-sm text-[var(--text-muted)]">
-          Three concept directions synthesized from demo cultural influences.
-          Positioning copy is an agent hypothesis, not a market prediction.
+          Three concept directions from the deterministic agent. Positioning is
+          hypothesis; cultural anchors cite evidence. Scores are lab heuristics,
+          not Qloo forecasts.
         </p>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-3">
         {concepts.map((concept, index) => {
           const selected = selectedId === concept.id;
+          const evaluation = concept.evaluation;
           return (
             <article
               key={concept.id}
@@ -55,6 +57,35 @@ export function ConceptCards({
               <p className="mt-2 text-sm leading-relaxed text-[var(--text-muted)]">
                 {concept.positioning}
               </p>
+
+              {evaluation ? (
+                <div className="mt-3 grid grid-cols-3 gap-2 rounded-xl border border-[var(--line)] bg-[rgba(5,8,16,0.35)] px-2.5 py-2 text-center">
+                  <div>
+                    <p className="text-[10px] uppercase tracking-wide text-[var(--text-dim)]">
+                      Rel
+                    </p>
+                    <p className="font-mono text-xs text-cyan">
+                      {evaluation.relevance.toFixed(2)}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] uppercase tracking-wide text-[var(--text-dim)]">
+                      Orig
+                    </p>
+                    <p className="font-mono text-xs text-[#c4b5fd]">
+                      {evaluation.originality.toFixed(2)}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] uppercase tracking-wide text-[var(--text-dim)]">
+                      Evid
+                    </p>
+                    <p className="font-mono text-xs text-[var(--gold)]">
+                      {evaluation.evidenceCoverage.toFixed(2)}
+                    </p>
+                  </div>
+                </div>
+              ) : null}
 
               <div className="mt-4">
                 <p className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-[var(--text-dim)]">
