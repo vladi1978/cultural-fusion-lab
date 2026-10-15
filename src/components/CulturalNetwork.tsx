@@ -241,11 +241,11 @@ export function CulturalNetwork({
           FUSION
         </text>
 
-        {edges.map((edge) => {
+        {edges.map((edge, edgeIndex) => {
           const style = EDGE_STYLE[edge.kind];
           const active = selectedEdgeId === edge.id;
           return (
-            <g key={edge.id}>
+            <g key={`${edge.id}-${edgeIndex}`}>
               <line
                 x1={edge.x1}
                 y1={edge.y1}

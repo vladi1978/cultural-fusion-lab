@@ -17,8 +17,11 @@ export async function GET(request: Request) {
   const shouldProbe = url.searchParams.get("probe") === "1";
 
   let auth = getAuthProbeState();
-  if (shouldProbe && isQlooConfigured()) {
-    auth = await verifyQlooAuthentication();
+  if (shouldProbe) {
+    return NextResponse.json(
+      { error: "Authentication probing is disabled on this public endpoint." },
+      { status: 403 },
+    );
   }
 
   return NextResponse.json({

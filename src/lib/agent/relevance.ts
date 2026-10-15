@@ -4,7 +4,7 @@
  * Does not invent Qloo affinity scores.
  */
 
-import type { CulturalEntity } from "../types";
+import type { CulturalEntity, EvidenceItem } from "../types";
 import type {
   EntityRelevanceScore,
   InterpretedObjective,
@@ -161,6 +161,7 @@ export function scoreEntityRelevance(
 export function applyRelevanceGate(options: {
   entities: CulturalEntity[];
   interpreted: InterpretedObjective;
+  evidence?: EvidenceItem[];
 }): RelevanceGateResult {
   const interestTerms = tokenizeMeaningful(options.interpreted.culturalInterest);
   const allTerms = extractIntentTerms(options.interpreted);
@@ -169,6 +170,42 @@ export function applyRelevanceGate(options: {
   const scores = options.entities.map((entity) =>
     scoreEntityRelevance(entity, allTerms, primaryCount),
   );
+  // Indirect relevance requires verified Insights evidence whose
+  // recorded seed IDs independently pass the ordinary textual gate.
+  const byId = new Map(options.entities.map((entity) => [entity.id, entity]));
+  const directRelevantIds = new Set(
+    scores.filter((score) => score.relevant).map((score) => score.entityId),
+  );
+  const indirectlyRelevantIds = new Set<string>();
+
+  for (const item of options.evidence ?? []) {
+    if (
+      item.source !== "verified_api" ||
+      item.label !== "Qloo Insights results" ||
+      !item.insightSeedEntityIds?.length ||
+      !item.relatedEntityIds?.length
+    ) {
+      continue;
+    }
+
+    const validSeeds = item.insightSeedEntityIds.filter(
+      (id) => byId.has(id) && directRelevantIds.has(id),
+    );
+
+    // Reject partially unverified seed sets.
+    if (validSeeds.length !== item.insightSeedEntityIds.length) continue;
+
+    for (const id of item.relatedEntityIds) {
+      if (byId.has(id)) indirectlyRelevantIds.add(id);
+    }
+  }
+
+  for (const score of scores) {
+    if (!score.relevant && indirectlyRelevantIds.has(score.entityId)) {
+      score.relevant = true;
+    }
+  }
+
   const scoreById = new Map(scores.map((s) => [s.entityId, s]));
 
   const kept = options.entities.filter(

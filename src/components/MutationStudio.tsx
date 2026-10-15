@@ -159,12 +159,12 @@ export function MutationStudio({
         </p>
         <p className="mt-2 text-sm leading-relaxed text-[var(--text-muted)]">
           {outgoing && incoming
-            ? `“${outgoing.name}” leaves the influence set; “${incoming.name}” becomes the new cultural hinge. The ${concept.directionId ?? "concept"} direction is re-authored around that swap, then re-evaluated with claim→evidence links intact.`
+            ? `“${outgoing.name}” (${outgoing.category}) exits; “${incoming.name}” (${incoming.category}) becomes the hinge. The engine rewrites format, mechanics, audience participation, and distinctive value from the incoming category/tags — not by appending “Variant” to the old title. If metadata is too weak, mutation fails closed as insufficient differentiation.`
             : "Choose both sides of the swap to preview how the concept will evolve."}
         </p>
         <p className="mt-2 text-xs text-[var(--text-dim)]">
-          Does not claim predictive purchase intent, virality, or consumer
-          simulation. Demo affinities remain fictional.
+          Objective and output category stay fixed. Rationales are creative
+          interpretations of entity metadata — not market predictions.
         </p>
       </div>
 

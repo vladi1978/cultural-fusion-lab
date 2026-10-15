@@ -34,30 +34,47 @@ export function mapSubtypeToCategory(
   subtype?: string,
   type?: string,
 ): EntityCategory {
-  const key = subtype || type || "";
-  return SUBTYPE_TO_CATEGORY[key] ?? "other";
+  if (subtype && SUBTYPE_TO_CATEGORY[subtype]) {
+    return SUBTYPE_TO_CATEGORY[subtype];
+  }
+  if (type && SUBTYPE_TO_CATEGORY[type]) {
+    return SUBTYPE_TO_CATEGORY[type];
+  }
+  return "other";
 }
 
 export function mapQlooEntityToCultural(entity: QlooEntity): CulturalEntity {
-  const affinityRaw =
-    entity.query?.affinity ?? entity.affinity ?? entity.popularity ?? 0.5;
+  const reportedAffinity = entity.query?.affinity ?? entity.affinity;
+  const affinityRaw = reportedAffinity ?? entity.popularity ?? 0.5;
   const affinity = Math.max(0, Math.min(1, Number(affinityRaw) || 0.5));
   const description =
     entity.properties?.description ||
     entity.properties?.short_description ||
-    `Qloo entity (${entity.subtype ?? entity.type ?? "unknown type"}).`;
+    `Qloo entity (${entity.subtype ?? entity.type ?? entity.types?.[0] ?? "unknown type"}).`;
 
   const tags = (entity.tags ?? [])
     .map((t) => t.name || t.id)
     .filter(Boolean)
-    .slice(0, 6);
+    .slice(0, 24);
 
   return {
     id: entity.entity_id,
     name: entity.name,
-    category: mapSubtypeToCategory(entity.subtype, entity.type),
+    category: mapSubtypeToCategory(
+      entity.subtype,
+      entity.type ??
+        entity.types?.find((type) => mapSubtypeToCategory(type) !== "other") ??
+        entity.types?.[0],
+    ),
     description,
     affinity: Math.round(affinity * 1000) / 1000,
+    apiReportedAffinity:
+      reportedAffinity !== undefined &&
+      Number.isFinite(reportedAffinity) &&
+      reportedAffinity >= 0 &&
+      reportedAffinity <= 1
+        ? reportedAffinity
+        : undefined,
     tags,
   };
 }
@@ -163,6 +180,9 @@ export function buildLiveExplorationResult(options: {
   entities: CulturalEntity[];
   tags: QlooTag[];
   endpointNotes: string[];
+  searchEntityIds?: string[];
+  insightsEntityIds?: string[];
+  insightsSeedIds?: string[];
 }): ExplorationResult {
   const now = new Date().toISOString();
   const apiEvidence: EvidenceItem = {
@@ -175,6 +195,31 @@ export function buildLiveExplorationResult(options: {
     relatedEntityIds: options.entities.map((e) => e.id),
     createdAt: now,
   };
+
+  const searchEvidence: EvidenceItem | null =
+    options.searchEntityIds?.length
+      ? {
+          id: `ev-qloo-search-${Date.now()}`,
+          source: "verified_api",
+          label: "Qloo Search results",
+          detail: "Entities returned by GET /search. Search alone does not establish an indirect Taste Graph relationship.",
+          relatedEntityIds: options.searchEntityIds,
+          createdAt: now,
+        }
+      : null;
+
+  const insightsEvidence: EvidenceItem | null =
+    options.insightsEntityIds?.length
+      ? {
+          id: `ev-qloo-insights-${Date.now()}`,
+          source: "verified_api",
+          label: "Qloo Insights results",
+          detail: "Entities returned by GET /v2/insights using collected seed entities. Relationship relevance must still be validated.",
+          relatedEntityIds: options.insightsEntityIds,
+          insightSeedEntityIds: options.insightsSeedIds ?? [],
+          createdAt: now,
+        }
+      : null;
 
   const tagEvidence: EvidenceItem | null =
     options.tags.length > 0
@@ -205,6 +250,8 @@ export function buildLiveExplorationResult(options: {
     concepts,
     evidence: [
       apiEvidence,
+      ...(searchEvidence ? [searchEvidence] : []),
+      ...(insightsEvidence ? [insightsEvidence] : []),
       ...(tagEvidence ? [tagEvidence] : []),
       ...hypEvidence,
     ],

@@ -26,7 +26,7 @@ describe("deterministic agent orchestration", () => {
 
     expect(AGENT_MOCK_LABEL).toMatch(/MOCK FIXTURE/);
     expect(result.mode).toBe("demo");
-    expect(result.agentTrace.engine).toBe("deterministic-v1");
+    expect(result.agentTrace.engine).toBe("deterministic-v2.1");
     expect(result.agentTrace.steps.map((s) => s.id)).toEqual([
       "interpret",
       "plan",
@@ -34,10 +34,14 @@ describe("deterministic agent orchestration", () => {
       "relevance",
       "conflicts",
       "affinities",
+      "opportunities",
       "concepts",
       "evaluate",
     ]);
-    expect(result.concepts).toHaveLength(3);
+    expect(result.concepts.length).toBeGreaterThanOrEqual(1);
+    expect(result.concepts.length).toBeLessThanOrEqual(3);
+    expect(result.concepts.every((c) => c.spec?.mechanismId)).toBe(true);
+    expect(result.agentTrace.opportunities).toBeTruthy();
     expect(result.disclaimer).toMatch(/DEMO MODE/i);
     expect(result.agentTrace.warnings.some((w) => /not Qloo/i.test(w))).toBe(
       true,

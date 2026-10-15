@@ -32,6 +32,7 @@ import { EvidencePanel } from "./EvidencePanel";
 import { ExplorationForm } from "./ExplorationForm";
 import { LabHeader } from "./LabHeader";
 import { LandingHero } from "./LandingHero";
+import { MutationComparison } from "./MutationComparison";
 import { MutationStudio } from "./MutationStudio";
 
 const DEFAULT_REQUEST: ExplorationRequest = {
@@ -143,6 +144,20 @@ export function LabWorkspace() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const openCreativeJourney = () => {
+    if (!result) return;
+
+    window.sessionStorage.setItem(
+      "cfl-creative-journey-request",
+      JSON.stringify({
+        ...result.request,
+        mode: "demo",
+      }),
+    );
+
+    window.location.assign("/causal-lab?source=custom");
   };
 
   const openMutation = (concept: FusionConcept) => {
@@ -280,7 +295,26 @@ export function LabWorkspace() {
       {stage === "concepts" ? (
         result ? (
           <div className="space-y-8">
-            <ConceptCards
+            <div className="mb-6 rounded-2xl border border-cyan-400/30 bg-gradient-to-r from-cyan-950/60 to-slate-900 p-5">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h3 className="text-lg font-semibold text-white">
+                Continue your Creative Journey
+              </h3>
+              <p className="mt-1 text-sm text-slate-300">
+                Turn cultural opportunities into interactive creative experiments.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={openCreativeJourney}
+              className="rounded-xl bg-cyan-400 px-5 py-3 font-semibold text-slate-950 transition hover:bg-cyan-300"
+            >
+              Explore in Creative Journey →
+            </button>
+          </div>
+        </div>
+        <ConceptCards
               concepts={result.concepts}
               selectedId={selectedConcept?.id}
               onSelect={setSelectedConcept}
@@ -289,51 +323,10 @@ export function LabWorkspace() {
             />
 
             {lastMutation && mutationBaseline ? (
-              <section className="panel p-5 sm:p-6">
-                <h3 className="font-display text-xl text-white">
-                  Latest mutation comparison
-                </h3>
-                <p className="mt-1 text-sm text-[var(--text-muted)]">
-                  Before/after of the cultural influence swap and narrative
-                  evolution.
-                </p>
-                <div className="mt-4 grid gap-4 md:grid-cols-2">
-                  <div className="rounded-2xl border border-[var(--line)] bg-[rgba(5,8,16,0.4)] p-4">
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--text-dim)]">
-                      Before
-                    </p>
-                    <p className="mt-1 font-display text-lg text-white">
-                      {mutationBaseline.title}
-                    </p>
-                    <p className="mt-2 text-xs leading-relaxed text-[var(--text-muted)]">
-                      {mutationBaseline.narrative?.whatItIs ??
-                        mutationBaseline.summary}
-                    </p>
-                    <ul className="mt-3 space-y-1">
-                      {mutationBaseline.culturalInfluences.map((e) => (
-                        <li key={e.id} className="text-xs text-[var(--text-dim)]">
-                          {e.category} · {e.name}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                  <div className="rounded-2xl border border-[rgba(34,211,238,0.35)] bg-[rgba(34,211,238,0.08)] p-4">
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#a5f3fc]">
-                      After
-                    </p>
-                    <p className="mt-1 font-display text-lg text-white">
-                      {lastMutation.mutatedConcept.title}
-                    </p>
-                    <p className="mt-2 text-xs leading-relaxed text-[var(--text-muted)]">
-                      {lastMutation.mutatedConcept.narrative?.whatItIs ??
-                        lastMutation.mutatedConcept.summary}
-                    </p>
-                    <p className="mt-3 text-xs text-[#fde68a]">
-                      {lastMutation.mutatedConcept.mutationNote}
-                    </p>
-                  </div>
-                </div>
-              </section>
+              <MutationComparison
+                baseline={mutationBaseline}
+                mutation={lastMutation}
+              />
             ) : null}
 
             <div className="space-y-3">

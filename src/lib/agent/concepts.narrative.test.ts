@@ -67,8 +67,8 @@ const evidence = [
   },
 ];
 
-describe("concept narrative quality", () => {
-  it("produces concrete differentiated narratives without dumping the raw objective", () => {
+describe("concept narrative / ConceptSpec quality", () => {
+  it("produces concrete ConceptSpecs without dumping the raw objective", () => {
     const { concepts } = generateConceptCandidates({
       interpreted,
       entities,
@@ -77,38 +77,27 @@ describe("concept narrative quality", () => {
       seedKey: "narr",
     });
 
-    expect(concepts).toHaveLength(3);
+    expect(concepts.length).toBeGreaterThanOrEqual(1);
+    expect(concepts.length).toBeLessThanOrEqual(3);
+
     for (const concept of concepts) {
-      expect(concept.narrative).toBeTruthy();
-      const n = concept.narrative!;
-      expect(n.whatItIs.length).toBeGreaterThan(40);
-      expect(n.whoItServes.length).toBeGreaterThan(20);
-      expect(n.howItWorks.length).toBeGreaterThan(40);
-      expect(n.distinctive.length).toBeGreaterThan(20);
-      expect(n.inspiredBy).toMatch(/Influences:/);
-      expect(n.evidenceBoundary).toMatch(/hypothes/i);
-      // Must not simply paste the full user objective into the proposal body.
-      expect(n.whatItIs).not.toContain(interpreted.rawObjective);
-      expect(n.howItWorks).not.toContain(interpreted.rawObjective);
-      // Claims remain grounded
+      expect(concept.spec).toBeTruthy();
+      const s = concept.spec!;
+      expect(s.proposition.length).toBeGreaterThan(24);
+      expect(s.journey.length).toBeGreaterThanOrEqual(3);
+      expect(s.mechanics.length).toBeGreaterThan(40);
+      expect(s.rationales.length).toBeGreaterThanOrEqual(3);
+      expect(s.evidenceBoundary).toMatch(/hypothes|creative interpretation/i);
+      expect(s.frozenObjective).toBe(interpreted.rawObjective);
+      expect(s.frozenOutputCategory).toBe(interpreted.outputCategory);
+      expect(s.proposition).not.toContain(interpreted.rawObjective);
+      expect(s.mechanics).not.toContain(interpreted.rawObjective);
       expect(concept.claims.every((c) => c.evidenceIds.length > 0)).toBe(true);
+      expect(concept.narrative).toBeTruthy();
     }
 
-    const directions = new Set(concepts.map((c) => c.directionId));
-    expect(directions.size).toBe(3);
-
-    const whats = concepts.map((c) => c.narrative!.whatItIs);
-    expect(new Set(whats).size).toBe(3);
-
-    expect(concepts.some((c) => /intimacy|private|ritual/i.test(c.narrative!.distinctive))).toBe(
-      true,
-    );
-    expect(concepts.some((c) => /belonging|shared|commons/i.test(c.narrative!.distinctive))).toBe(
-      true,
-    );
-    expect(concepts.some((c) => /modular|recombin|kit\/platform/i.test(c.narrative!.distinctive))).toBe(
-      true,
-    );
+    const mechanisms = new Set(concepts.map((c) => c.spec!.mechanismId));
+    expect(mechanisms.size).toBe(concepts.length);
   });
 
   it("keeps claim→evidence integrity across narrative claims", () => {
@@ -132,5 +121,26 @@ describe("concept narrative quality", () => {
         }
       }
     }
+  });
+
+  it("is deterministic across repeated runs", () => {
+    const a = generateConceptCandidates({
+      interpreted,
+      entities,
+      evidence,
+      affinities: [],
+      seedKey: "det",
+    });
+    const b = generateConceptCandidates({
+      interpreted,
+      entities,
+      evidence,
+      affinities: [],
+      seedKey: "det",
+    });
+    expect(a.concepts.map((c) => c.id)).toEqual(b.concepts.map((c) => c.id));
+    expect(a.concepts.map((c) => c.spec?.mechanicFingerprint)).toEqual(
+      b.concepts.map((c) => c.spec?.mechanicFingerprint),
+    );
   });
 });

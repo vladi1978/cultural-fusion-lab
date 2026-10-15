@@ -49,6 +49,7 @@ export interface QlooEntity {
   name: string;
   type?: string;
   subtype?: string;
+  types?: string[];
   properties?: QlooEntityProperties;
   popularity?: number;
   /** Present on some Insights results; optional affinity toward the query signal. */
@@ -155,6 +156,11 @@ export function parseQlooEntity(value: unknown): QlooEntity | null {
     name,
     type: asString(rec.type),
     subtype: asString(rec.subtype),
+    types: Array.isArray(rec.types)
+      ? rec.types
+          .map(asString)
+          .filter((value): value is string => value !== undefined)
+      : undefined,
     properties: properties ?? undefined,
     popularity: asNumber(rec.popularity),
     affinity: asNumber(rec.affinity),
@@ -195,6 +201,7 @@ export function parseEntitiesResponse(payload: unknown): QlooEntity[] {
 
   const results = asRecord(root.results);
   const entitiesCandidate =
+    (Array.isArray(root.results) && root.results) ||
     (results && Array.isArray(results.entities) && results.entities) ||
     (Array.isArray(root.entities) && root.entities) ||
     (Array.isArray(root.data) && root.data) ||

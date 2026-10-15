@@ -6,8 +6,8 @@
  * 2. Plan Qloo entity searches
  * 3. Collect + normalize cultural evidence (demo fixtures or live Qloo)
  * 4. Identify cross-category affinities (no invented Qloo scores)
- * 5. Generate three explainable concept candidates with evidence refs
- * 6. Evaluate relevance / originality / evidence coverage
+ * 5. Synthesize mechanism-distinct concept candidates (1–3 after quality gates)
+ * 6. Evaluate structural heuristics separately from creative claims
  * 7. Mutate + re-evaluate on demand
  *
  * Does not call paid LLMs. Live Mode remains gated elsewhere until a real key works.
@@ -25,7 +25,11 @@ import { generateConceptCandidates } from "./concepts";
 import { evaluateConcepts } from "./evaluate";
 import { interpretObjective } from "./interpret";
 import { mutateAndReevaluate } from "./mutate";
+import { selectableOpportunities } from "./opportunity-gates";
+import type { OpportunityHypothesis } from "./opportunity-types";
 import { planSearches } from "./plan";
+import { createDeterministicReasoningProvider } from "./reasoning/deterministic";
+import type { ReasoningProvider } from "./reasoning/provider";
 import {
   applyRelevanceGate,
   assertTopicalNeighborhood,
@@ -44,6 +48,10 @@ export interface OrchestratorOptions {
   source?: CulturalEvidenceSource;
   /** Injected clock for tests */
   now?: () => string;
+  /** Defaults to deterministic ReasoningProvider (no LLM). */
+  reasoning?: ReasoningProvider;
+  /** Optional local observation hook; does not change the public result. */
+  onOpportunities?: (opportunities: OpportunityHypothesis[]) => void;
 }
 
 function stamp(now: () => string): string {
@@ -80,6 +88,8 @@ export async function runExplorationAgent(
 ): Promise<AgentExplorationResult> {
   const now = options.now ?? (() => new Date().toISOString());
   const source = options.source ?? createDemoSource();
+  const reasoning =
+    options.reasoning ?? createDeterministicReasoningProvider();
   const steps: AgentStepTrace[] = [];
   const warnings: string[] = [];
 
@@ -150,6 +160,7 @@ export async function runExplorationAgent(
   const relevanceGate = applyRelevanceGate({
     entities: collected.entities,
     interpreted,
+    evidence: source.id === "qloo" ? collected.evidence : undefined,
   });
   try {
     assertTopicalNeighborhood(relevanceGate, collected.entities.length);
@@ -195,20 +206,24 @@ export async function runExplorationAgent(
   if (orphanEntities.length > 0) {
     const sourceLabel =
       source.id === "qloo" ? ("verified_api" as const) : ("mock_demo" as const);
-    evidence.push({
-      id: `ev-agent-collect-${seedKey(request)}`,
-      source: sourceLabel,
-      label:
-        source.id === "qloo"
-          ? "Collected Qloo entities"
-          : "Collected demo entities",
-      detail:
-        source.id === "qloo"
-          ? "Entity set returned by the live Qloo source during agent collection."
-          : "Entity set from labeled demo fixtures during agent collection. Not Qloo Taste Graph data.",
-      relatedEntityIds: orphanEntities.map((e) => e.id),
-      createdAt: stamp(now),
-    });
+    // P3.7.4: Collection provenance is entity-specific, not a
+    // fabricated cross-entity affinity or cultural relationship.
+    for (const entity of orphanEntities) {
+      evidence.push({
+        id: `ev-agent-collect-${seedKey(request)}-${entity.id}`,
+        source: sourceLabel,
+        label:
+          source.id === "qloo"
+            ? `Collected Qloo entity: ${entity.name}`
+            : `Collected demo entity: ${entity.name}`,
+        detail:
+          source.id === "qloo"
+            ? "Entity returned by the live Qloo source during agent collection. Collection alone does not establish cultural affinity."
+            : "Entity from labeled synthetic demo fixtures. Collection alone does not establish cultural affinity or Qloo Taste Graph findings.",
+        relatedEntityIds: [entity.id],
+        createdAt: stamp(now),
+      });
+    }
   }
 
   // 3c. Conflict awareness (label unresolved; do not invent resolutions)
@@ -242,6 +257,7 @@ export async function runExplorationAgent(
     entities: topicalEntities,
     evidence,
     provenanceByEntityId: collected.provenanceByEntityId,
+    culturalInterest: interpreted.culturalInterest,
   });
   pushStep(
     steps,
@@ -256,8 +272,75 @@ export async function runExplorationAgent(
     now,
   );
 
-  // 5. Concepts
-  const { concepts: drafts, hypothesisEvidence } = generateConceptCandidates({
+  // 5. Opportunity intelligence (P1) — signal graph → hypotheses → gates
+  const signalGraph = reasoning.buildSignalGraph({
+    entities: topicalEntities,
+    evidence,
+    affinities,
+    conflicts,
+    provenanceByEntityId: collected.provenanceByEntityId,
+    mode: request.mode,
+    culturalInterest: interpreted.culturalInterest,
+  });
+  const proposedOpportunities = reasoning.proposeOpportunities({
+    graph: signalGraph,
+    interpreted,
+  });
+  const gatedOpportunities = reasoning.gateOpportunities({
+    opportunities: proposedOpportunities,
+    interpreted,
+    graph: signalGraph,
+  });
+  const selectedOpportunities = selectableOpportunities(gatedOpportunities);
+  options.onOpportunities?.([...selectedOpportunities]);
+  const opportunityStats = {
+    accepted: gatedOpportunities.filter((o) => o.status === "accepted").length,
+    rejected: gatedOpportunities.filter((o) => o.status === "rejected").length,
+    downgraded: gatedOpportunities.filter((o) => o.status === "downgraded")
+      .length,
+    summaries: gatedOpportunities.slice(0, 8).map((o) =>
+      o.status === "accepted"
+        ? `ACCEPT ${o.kind}: ${o.title}`
+        : `${o.status.toUpperCase()} ${o.kind}: ${o.title} — ${o.rejectionReason ?? o.uncertainty}`,
+    ),
+  };
+  pushStep(
+    steps,
+    {
+      id: "opportunities",
+      title: "Opportunity intelligence",
+      status: selectedOpportunities.length ? "ok" : "empty",
+      detail: `ReasoningProvider=${reasoning.id}. Graph signals=${signalGraph.signals.length}, relationships=${signalGraph.relationships.length}. Opportunities accepted=${opportunityStats.accepted}, downgraded=${opportunityStats.downgraded}, rejected=${opportunityStats.rejected}. Hypotheses only — not demand or Qloo affinity proof. Rejection diagnostics: ${opportunityStats.summaries.join(" | ")}`,
+    },
+    now,
+  );
+  for (const note of signalGraph.uncertainties.slice(0, 3)) {
+    warnings.push(note);
+  }
+  if (opportunityStats.rejected > 0) {
+    warnings.push(
+      `Opportunity gates rejected ${opportunityStats.rejected} weak/unsupported hypothes(e/s).`,
+    );
+  }
+
+  // Hypothesis evidence rows for accepted opportunities
+  for (const opp of selectedOpportunities) {
+    evidence.push({
+      id: `ev-${opp.id}`,
+      source: "agent_hypothesis",
+      label: `Opportunity hypothesis (${opp.kind}): ${opp.title}`,
+      detail: `${opp.whyCreativelyUseful} ${opp.designImplication} Uncertainty: ${opp.uncertainty}`,
+      relatedEntityIds: [...opp.supportingEntityIds],
+      createdAt: stamp(now),
+    });
+  }
+
+  // 6. Concepts (opportunity-influenced synthesis + quality gates; never pad)
+  const {
+    concepts: drafts,
+    hypothesisEvidence,
+    quality,
+  } = generateConceptCandidates({
     interpreted,
     entities: topicalEntities,
     evidence,
@@ -265,6 +348,7 @@ export async function runExplorationAgent(
     conflicts,
     seedKey: seedKey(request),
     mode: request.mode,
+    opportunities: selectedOpportunities,
   });
   evidence = [...evidence, ...hypothesisEvidence];
   pushStep(
@@ -273,12 +357,19 @@ export async function runExplorationAgent(
       id: "concepts",
       title: "Generate concept candidates",
       status: "ok",
-      detail: `Generated ${drafts.length} directionally distinct candidates (intimate / communal / systems) with claim→evidence references.`,
+      detail: `Accepted ${quality.candidatesAccepted}/${quality.candidatesGenerated} mechanism-distinct candidates after quality gates (1–3 max; no padding). Mechanisms: ${drafts
+        .map((c) => c.spec?.mechanismId ?? "legacy")
+        .join(", ")}. Opportunity-linked: ${drafts.filter((c) => c.spec?.opportunityId).length}.`,
     },
     now,
   );
+  if (quality.rejectedSummaries.length > 0) {
+    warnings.push(
+      `Quality gates rejected ${quality.rejectedSummaries.length} candidate(s).`,
+    );
+  }
 
-  // 6. Evaluate
+  // 7. Evaluate (transparent heuristics — not creativity/market proof)
   const concepts = evaluateConcepts({
     concepts: drafts,
     interpreted,
@@ -290,7 +381,7 @@ export async function runExplorationAgent(
       id: "evaluate",
       title: "Evaluate candidates",
       status: "ok",
-      detail: `Ranked by overall heuristic (relevance / originality / evidence coverage). Top: ${concepts[0]?.title ?? "n/a"} (${concepts[0]?.evaluation.overall ?? 0}).`,
+      detail: `Ranked by structural heuristics (relevance / originality / evidence coverage). Not proof of real-world originality or commercial viability. Top: ${concepts[0]?.title ?? "n/a"} (${concepts[0]?.evaluation.overall ?? 0}).`,
     },
     now,
   );
@@ -308,7 +399,7 @@ export async function runExplorationAgent(
   }
 
   const agentTrace: AgentTrace = {
-    engine: "deterministic-v1",
+    engine: "deterministic-v2.1",
     mode: request.mode,
     steps,
     interpreted,
@@ -326,6 +417,8 @@ export async function runExplorationAgent(
       intentTerms: relevanceGate.intentTerms,
     },
     conflicts,
+    quality,
+    opportunities: opportunityStats,
   };
 
   const disclaimer =
@@ -336,6 +429,7 @@ export async function runExplorationAgent(
   return {
     mode: request.mode,
     request,
+    opportunities: selectedOpportunities,
     clusters: clusterCulturalEntities(topicalEntities),
     entities: topicalEntities,
     concepts,
@@ -417,6 +511,7 @@ export async function runMutationAgent(
         request.mode === "live" ? "verified_api" : "mock_demo",
       ]),
     ),
+    culturalInterest: interpreted.culturalInterest,
   });
 
   pushStep(
@@ -436,6 +531,7 @@ export async function runMutationAgent(
     mode: request.mode,
     originalConcept: original,
     mutatedConcept: mutated,
+    mutationDiffs: mutated.mutationDiffs,
     evidence,
     affinities,
     generatedAt: stamp(now),
@@ -444,7 +540,7 @@ export async function runMutationAgent(
         ? DEMO_DISCLAIMER
         : "LIVE MODE — mutation narrative is agent hypothesis; replacement entities cite linked evidence provenance.",
     agentTrace: {
-      engine: "deterministic-v1",
+      engine: "deterministic-v2.1",
       mode: request.mode,
       steps,
       interpreted,

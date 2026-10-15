@@ -114,9 +114,10 @@ export async function probeAuthentication(
   options: EndpointCallOptions = {},
 ): Promise<{ ok: true } | { ok: false; error: QlooError }> {
   try {
-    await getInsights(
+    await searchEntities(
       {
-        "filter.type": "urn:entity:brand",
+        query: "jazz",
+        type: "urn:entity:artist",
         take: 1,
       },
       options,

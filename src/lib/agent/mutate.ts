@@ -1,9 +1,7 @@
 import type { CulturalEntity, EvidenceItem, FusionConcept } from "../types";
-import {
-  buildConceptNarrative,
-  composePositioning,
-} from "./concepts";
+import { composePositioning } from "./concepts";
 import { evaluateSingleConcept } from "./evaluate";
+import { transformConceptForMutation } from "./mutation-transform";
 import type {
   ConceptClaim,
   CreativeDirectionId,
@@ -80,30 +78,7 @@ export async function mutateAndReevaluate(options: {
   const newInfluences = concept.culturalInfluences.map((e) =>
     e.id === outgoing.id ? incoming! : e,
   );
-
-  const now = new Date().toISOString();
-  const mutEvidence: EvidenceItem = {
-    id: `ev-agent-mut-${Date.now()}`,
-    source:
-      options.mutationRequest.mode === "live" ? "agent_hypothesis" : "mock_demo",
-    label: "Agent mutation variant",
-    detail: `Replaced “${outgoing.name}” with “${incoming.name}”. Provenance of the replacement entity must be read from linked evidence — mutation narrative remains a hypothesis.`,
-    relatedEntityIds: newInfluences.map((e) => e.id),
-    createdAt: now,
-  };
-
-  const hypEvidence: EvidenceItem = {
-    id: `ev-agent-mut-hyp-${Date.now()}`,
-    source: "agent_hypothesis",
-    label: "Variant positioning shift",
-    detail: `Hypothesis: introducing ${incoming.name} (${incoming.category}) reframes the concept. Not a predictive claim.`,
-    relatedEntityIds: [incoming.id],
-    createdAt: now,
-  };
-
-  const incomingEvidenceIds = [...evidence, ...extraEvidence]
-    .filter((e) => e.relatedEntityIds?.includes(incoming!.id))
-    .map((e) => e.id);
+  const retainedInfluences = newInfluences.filter((e) => e.id !== incoming!.id);
 
   const directionId = (
     "directionId" in concept && concept.directionId
@@ -111,19 +86,65 @@ export async function mutateAndReevaluate(options: {
       : "intimate"
   ) as CreativeDirectionId;
 
-  const narrative = buildConceptNarrative({
+  const originalNarrative = concept.narrative ?? {
+    whatItIs: concept.summary || concept.positioning,
+    whoItServes: concept.positioning,
+    howItWorks: concept.positioning,
+    distinctive: concept.summary || concept.positioning,
+    inspiredBy: concept.culturalInfluences
+      .map((e) => `${e.name} (${e.category})`)
+      .join(" · "),
+    evidenceBoundary:
+      "Original concept narrative lacked structured fields; treated as prior hypothesis text.",
+  };
+
+  // Influence-sensitive rewrite — may throw INSUFFICIENT_DIFFERENTIATION.
+  const transform = transformConceptForMutation({
     interpreted,
-    direction: directionId,
-    influences: newInfluences,
+    directionId,
+    originalTitle: concept.title,
+    originalNarrative,
+    outgoing,
+    incoming,
+    retainedInfluences,
     modeLabel: options.mutationRequest.mode,
   });
-  narrative.howItWorks = `${narrative.howItWorks} Mutation shift: ${outgoing.name} exits; ${incoming.name} becomes the new cultural hinge.`;
-  narrative.evidenceBoundary = `${narrative.evidenceBoundary} Variant narrative remains a hypothesis after the influence swap.`;
+
+  // Deterministic evidence IDs (same inputs → same IDs).
+  const mutEvidenceId = `ev-agent-mut-${stableId(concept.id, outgoing.id, incoming.id)}`;
+  const hypEvidenceId = `ev-agent-mut-hyp-${stableId(concept.id, outgoing.id, incoming.id)}`;
+  const createdAt = new Date().toISOString();
+
+  const mutEvidence: EvidenceItem = {
+    id: mutEvidenceId,
+    source:
+      options.mutationRequest.mode === "live" ? "agent_hypothesis" : "mock_demo",
+    label: "Agent mutation variant",
+    detail: `Replaced “${outgoing.name}” (${outgoing.category}) with “${incoming.name}” (${incoming.category}). Lens ${transform.outgoingLens} → ${transform.incomingLens}. Provenance of the replacement entity must be read from linked evidence.`,
+    relatedEntityIds: newInfluences.map((e) => e.id),
+    createdAt,
+  };
+
+  const hypEvidence: EvidenceItem = {
+    id: hypEvidenceId,
+    source: "agent_hypothesis",
+    label: "Influence-sensitive positioning rewrite",
+    detail: transform.diffs
+      .filter((d) => d.changed)
+      .map((d) => `[${d.field}] ${d.why}`)
+      .join(" "),
+    relatedEntityIds: [incoming.id],
+    createdAt,
+  };
+
+  const incomingEvidenceIds = [...evidence, ...extraEvidence]
+    .filter((e) => e.relatedEntityIds?.includes(incoming!.id))
+    .map((e) => e.id);
 
   const claims: ConceptClaim[] = [
     {
       id: `claim-mut-ref-${incoming.id.slice(0, 8)}`,
-      statement: `Cultural anchor after mutation: “${incoming.name}” (${incoming.category}) replaces “${outgoing.name}”.`,
+      statement: `Cultural anchor after mutation: “${incoming.name}” (${incoming.category}) replaces “${outgoing.name}” (${outgoing.category}).`,
       evidenceIds:
         incomingEvidenceIds.length > 0
           ? incomingEvidenceIds
@@ -132,10 +153,19 @@ export async function mutateAndReevaluate(options: {
     },
     {
       id: `claim-mut-pos`,
-      statement: `Positioning hypothesis updated: ${narrative.whatItIs}`,
+      statement: `Creative interpretation: ${transform.narrative.whatItIs} Mechanics: ${transform.narrative.howItWorks}`,
       evidenceIds: [hypEvidence.id, mutEvidence.id],
       kind: "positioning_hypothesis",
     },
+    ...transform.diffs
+      .filter((d) => d.changed && d.field !== "inspiration")
+      .slice(0, 3)
+      .map((d, i) => ({
+        id: `claim-mut-diff-${d.field}-${i}`,
+        statement: `Field “${d.field}” changed (${d.basis}): ${d.why}`,
+        evidenceIds: [hypEvidence.id, mutEvidence.id],
+        kind: "positioning_hypothesis" as const,
+      })),
   ];
 
   for (const claim of claims) {
@@ -147,12 +177,74 @@ export async function mutateAndReevaluate(options: {
     }
   }
 
+  // Preserve user's objective/category — never rewrite outputCategory from mutation.
+  if (concept.outputCategory !== interpreted.outputCategory) {
+    throw new AgentError(
+      "VALIDATION",
+      "Mutation refused to alter the user's output category.",
+    );
+  }
+
+  // Keep ConceptSpec compatible: remap replaced influence, refresh narrative fields.
+  const remappedSpec =
+    concept.spec != null
+      ? {
+          ...concept.spec,
+          name: transform.title,
+          proposition: transform.narrative.whatItIs,
+          audience: transform.narrative.whoItServes.split(" Context:")[0]!.trim(),
+          mechanics: transform.narrative.howItWorks,
+          differentiationHypothesis: transform.narrative.distinctive,
+          evidenceBoundary: transform.narrative.evidenceBoundary,
+          frozenObjective: interpreted.rawObjective,
+          frozenOutputCategory: interpreted.outputCategory,
+          influenceMap: newInfluences.map((e) => {
+            const prior = concept.spec!.influenceMap.find(
+              (m) => m.entityId === e.id || m.entityId === outgoing.id,
+            );
+            return {
+              entityId: e.id,
+              entityName: e.name,
+              category: e.category,
+              role:
+                e.id === incoming!.id
+                  ? prior?.role ?? ("texture" as const)
+                  : prior?.role ?? ("texture" as const),
+              signalsUsed: e.tags.slice(0, 3),
+            };
+          }),
+          journey: concept.spec.journey.map((step) => ({
+            ...step,
+            influenceEntityIds: step.influenceEntityIds.map((id) =>
+              id === outgoing.id ? incoming!.id : id,
+            ),
+          })),
+          rationales: concept.spec.rationales.map((r) => ({
+            ...r,
+            influenceEntityId:
+              r.influenceEntityId === outgoing.id
+                ? incoming!.id
+                : r.influenceEntityId,
+            attributeOrSignal:
+              r.influenceEntityId === outgoing.id
+                ? incoming!.tags[0] ?? incoming!.category
+                : r.attributeOrSignal,
+            creativeInterpretation:
+              r.influenceEntityId === outgoing.id
+                ? `After mutation, “${incoming!.name}” (${incoming!.category}) supplies this signal instead of “${outgoing.name}”.`
+                : r.creativeInterpretation,
+          })),
+          mechanicFingerprint: `${concept.spec.mechanicFingerprint}|mut:${incoming.category}:${incoming.tags[0] ?? incoming.id}`,
+        }
+      : undefined;
+
   const base: EvaluatedConcept = {
     ...concept,
-    id: `${concept.id}-mut-${incoming.id.slice(0, 8)}`,
-    title: `${concept.title} · ${incoming.name.split(" ")[0]} Variant`,
+    id: `${concept.id}-mut-${stableId(outgoing.id, incoming.id).slice(0, 12)}`,
+    title: transform.title,
     parentConceptId: concept.id,
-    mutationNote: `Swapped ${outgoing.name} (${outgoing.category}) → ${incoming.name} (${incoming.category}). Concept mechanics and audience framing were re-authored around the new hinge; evidence provenance was preserved and re-evaluated.`,
+    mutationNote: transform.mutationNote,
+    mutationDiffs: transform.diffs,
     culturalInfluences: newInfluences,
     evidenceIds: unique([
       ...concept.evidenceIds,
@@ -160,9 +252,11 @@ export async function mutateAndReevaluate(options: {
       hypEvidence.id,
       ...extraEvidence.map((e) => e.id),
     ]),
-    positioning: composePositioning(narrative),
-    summary: narrative.whatItIs,
-    narrative,
+    positioning: composePositioning(transform.narrative),
+    summary: transform.narrative.whatItIs,
+    narrative: transform.narrative,
+    spec: remappedSpec,
+    outputCategory: interpreted.outputCategory,
     directionId,
     claims,
     affinityIds:
@@ -192,4 +286,14 @@ export async function mutateAndReevaluate(options: {
 
 function unique(ids: string[]): string[] {
   return [...new Set(ids)];
+}
+
+/** Stable non-cryptographic id fragment for deterministic evidence/concept ids. */
+function stableId(...parts: string[]): string {
+  const raw = parts.join("::");
+  let hash = 0;
+  for (let i = 0; i < raw.length; i++) {
+    hash = (hash * 31 + raw.charCodeAt(i)) >>> 0;
+  }
+  return hash.toString(16).padStart(8, "0");
 }

@@ -5,10 +5,46 @@ import { GitBranch, Layers3, Sparkles } from "lucide-react";
 import type { FusionConcept } from "@/lib/types";
 import { OUTPUT_CATEGORY_LABELS } from "@/lib/types";
 
-const DIRECTION_META: Record<
+const MECHANISM_META: Record<
   string,
   { label: string; accent: string; ring: string }
 > = {
+  spatial_circuit: {
+    label: "Spatial circuit",
+    accent: "text-[#a5f3fc]",
+    ring: "ring-cyan/35",
+  },
+  narrative_chapters: {
+    label: "Narrative chapters",
+    accent: "text-[#ddd6fe]",
+    ring: "ring-violet/40",
+  },
+  sonic_set: {
+    label: "Sonic set",
+    accent: "text-[#fde68a]",
+    ring: "ring-[rgba(212,168,83,0.45)]",
+  },
+  brand_drop: {
+    label: "Brand drop",
+    accent: "text-[#fda4af]",
+    ring: "ring-rose-400/40",
+  },
+  material_layer: {
+    label: "Material layer",
+    accent: "text-[#86efac]",
+    ring: "ring-emerald-400/35",
+  },
+  hospitality_course: {
+    label: "Hospitality course",
+    accent: "text-[#fcd34d]",
+    ring: "ring-amber-300/40",
+  },
+  tension_dual: {
+    label: "Tension dual-path",
+    accent: "text-[#c4b5fd]",
+    ring: "ring-violet/50",
+  },
+  // Legacy direction fallbacks
   intimate: {
     label: "Intimate",
     accent: "text-[#a5f3fc]",
@@ -62,6 +98,11 @@ export function ConceptCards({
     return null;
   }
 
+  const countLabel =
+    concepts.length === 1
+      ? "One quality-gated proposal"
+      : `${concepts.length} quality-gated proposals`;
+
   return (
     <section className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
@@ -74,19 +115,29 @@ export function ConceptCards({
             Fusion Concepts
           </h2>
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[var(--text-muted)]">
-            Three directionally distinct proposals. Compare what each is, who it
-            serves, and how it works — then choose one to mutate. Lab scores are
-            heuristics, not market predictions or Qloo forecasts.
+            {countLabel} with distinct operating mechanics. Lab scores are
+            structural heuristics — not market predictions or Qloo forecasts.
           </p>
         </div>
       </div>
 
-      <div className="grid gap-5 xl:grid-cols-3">
+      <div
+        className={`grid gap-5 ${
+          concepts.length === 1
+            ? "max-w-xl"
+            : concepts.length === 2
+              ? "md:grid-cols-2"
+              : "xl:grid-cols-3"
+        }`}
+      >
         {concepts.map((concept, index) => {
           const selected = selectedId === concept.id;
-          const directionKey = concept.directionId ?? "intimate";
-          const direction = DIRECTION_META[directionKey] ?? DIRECTION_META.intimate!;
+          const mechanismKey =
+            concept.spec?.mechanismId ?? concept.directionId ?? "sonic_set";
+          const direction =
+            MECHANISM_META[mechanismKey] ?? MECHANISM_META.sonic_set!;
           const narrative = concept.narrative;
+          const spec = concept.spec;
           const evaluation = concept.evaluation;
 
           return (
@@ -101,7 +152,7 @@ export function ConceptCards({
 
               <div className="mb-4 flex flex-wrap items-center gap-2">
                 <span className="badge badge-cyan">0{index + 1}</span>
-                <span className={`badge badge-violet`}>{direction.label}</span>
+                <span className="badge badge-violet">{direction.label}</span>
                 <span className="badge badge-demo">
                   {OUTPUT_CATEGORY_LABELS[concept.outputCategory]}
                 </span>
@@ -111,7 +162,122 @@ export function ConceptCards({
                 {concept.title}
               </h3>
 
-              {narrative ? (
+              {spec ? (
+                <div className="mt-5 space-y-4">
+                  <NarrativeBlock label="Proposition">
+                    {spec.proposition}
+                  </NarrativeBlock>
+                  <NarrativeBlock label="Audience & context">
+                    {`${spec.audience} ${spec.context}`}
+                  </NarrativeBlock>
+                  <NarrativeBlock label="Operating mechanics">
+                    {spec.mechanics}
+                  </NarrativeBlock>
+                  <div>
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--text-dim)]">
+                      User journey
+                    </p>
+                    <ol className="mt-1.5 space-y-1.5 text-sm leading-relaxed text-[var(--text-muted)]">
+                      {spec.journey.slice(0, 3).map((step, i) => (
+                        <li key={step.id}>
+                          <span className={direction.accent}>
+                            {i + 1}. {step.actor}
+                          </span>
+                          {": "}
+                          {step.action}
+                        </li>
+                      ))}
+                    </ol>
+                  </div>
+                  <NarrativeBlock label="Differentiation hypothesis">
+                    {spec.differentiationHypothesis}
+                  </NarrativeBlock>
+                  <div className="rounded-xl border border-[rgba(212,168,83,0.28)] bg-[rgba(212,168,83,0.08)] px-3 py-2.5">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#fde68a]">
+                      Evidence vs hypothesis
+                    </p>
+                    <p className="mt-1 text-xs leading-relaxed text-[#fde68a]/90">
+                      {spec.evidenceBoundary}
+                    </p>
+                  </div>
+
+                  {spec.opportunityTrace ? (
+                    <details className="rounded-xl border border-[var(--line)] bg-[rgba(5,8,16,0.3)] px-3 py-2">
+                      <summary className="cursor-pointer text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--text-dim)]">
+                        Opportunity trace ({spec.opportunityKind ?? "hypothesis"})
+                      </summary>
+                      <ol className="mt-2 space-y-2">
+                        {spec.opportunityTrace.steps.map((step) => (
+                          <li
+                            key={`${step.stage}-${step.label}`}
+                            className="text-xs leading-relaxed text-[var(--text-muted)]"
+                          >
+                            <span className={direction.accent}>
+                              {step.label}
+                              {step.hypothesis ? " · hypothesis" : " · observed"}
+                            </span>
+                            <br />
+                            {step.detail}
+                          </li>
+                        ))}
+                      </ol>
+                    </details>
+                  ) : null}
+
+                  <details className="rounded-xl border border-[var(--line)] bg-[rgba(5,8,16,0.3)] px-3 py-2">
+                    <summary className="cursor-pointer text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--text-dim)]">
+                      Spec details (rationales, pilot, risks)
+                    </summary>
+                    <div className="mt-3 space-y-3">
+                      <div>
+                        <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--text-dim)]">
+                          Causal rationales
+                        </p>
+                        <ul className="mt-1 space-y-2">
+                          {spec.rationales.slice(0, 3).map((r) => (
+                            <li
+                              key={r.id}
+                              className="text-xs leading-relaxed text-[var(--text-muted)]"
+                            >
+                              <span className={direction.accent}>
+                                {r.attributeOrSignal}
+                              </span>
+                              {" — "}
+                              {r.creativeInterpretation}{" "}
+                              <em className="text-[var(--text-dim)] not-italic">
+                                ({r.whyItProducesMechanic})
+                              </em>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                      <NarrativeBlock label="Pilot experiment">
+                        {spec.pilotExperiment}
+                      </NarrativeBlock>
+                      <div>
+                        <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--text-dim)]">
+                          Risks & unknowns
+                        </p>
+                        <ul className="mt-1 list-disc space-y-1 pl-4 text-xs text-[var(--text-muted)]">
+                          {spec.risksAndUnknowns.map((risk) => (
+                            <li key={risk}>{risk}</li>
+                          ))}
+                        </ul>
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--text-dim)]">
+                          Feasibility assumptions
+                        </p>
+                        <ul className="mt-1 list-disc space-y-1 pl-4 text-xs text-[var(--text-muted)]">
+                          {spec.feasibilityAssumptions.map((a) => (
+                            <li key={a}>{a}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  </details>
+                </div>
+              ) : narrative ? (
                 <div className="mt-5 space-y-4">
                   <NarrativeBlock label="What it is">
                     {narrative.whatItIs}
@@ -148,16 +314,24 @@ export function ConceptCards({
                   Influence set
                 </p>
                 <ul className="space-y-1.5">
-                  {concept.culturalInfluences.map((entity) => (
-                    <li
-                      key={entity.id}
-                      className="rounded-lg border border-[var(--line)] bg-[rgba(5,8,16,0.35)] px-2.5 py-1.5 text-xs text-[var(--text)]"
-                    >
-                      <span className={direction.accent}>{entity.category}</span>
-                      {" · "}
-                      {entity.name}
-                    </li>
-                  ))}
+                  {concept.culturalInfluences.map((entity) => {
+                    const role = spec?.influenceMap.find(
+                      (m) => m.entityId === entity.id,
+                    )?.role;
+                    return (
+                      <li
+                        key={entity.id}
+                        className="rounded-lg border border-[var(--line)] bg-[rgba(5,8,16,0.35)] px-2.5 py-1.5 text-xs text-[var(--text)]"
+                      >
+                        <span className={direction.accent}>
+                          {entity.category}
+                          {role ? `/${role}` : ""}
+                        </span>
+                        {" · "}
+                        {entity.name}
+                      </li>
+                    );
+                  })}
                 </ul>
               </div>
 
@@ -193,7 +367,8 @@ export function ConceptCards({
                     </div>
                   </div>
                   <p className="mt-2 text-[10px] leading-relaxed text-[var(--text-dim)]">
-                    Not consumer demand, virality, or Qloo Taste Graph scores.
+                    Structural heuristics only — not consumer demand, virality,
+                    or Qloo Taste Graph scores.
                   </p>
                 </details>
               ) : null}

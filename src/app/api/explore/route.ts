@@ -6,7 +6,11 @@ import {
 } from "@/lib/agent";
 import { isQlooConfigured } from "@/lib/qloo/adapter";
 import { QlooError, toApiErrorPayload } from "@/lib/qloo/errors";
-import { isLiveModeAllowed } from "@/lib/qloo/live-gate";
+import {
+  isLiveModeAllowed,
+  isLiveOptInEnabled,
+  verifyQlooAuthentication,
+} from "@/lib/qloo/live-gate";
 import type { ApiErrorBody, ExplorationRequest, OutputCategory } from "@/lib/types";
 
 function isOutputCategory(value: unknown): value is OutputCategory {
@@ -57,7 +61,10 @@ function agentErrorResponse(err: AgentError) {
       ? 400
       : err.code === "LIVE_DISABLED"
         ? 503
-        : err.code === "EMPTY_EVIDENCE" || err.code === "IRRELEVANT_EVIDENCE"
+        : err.code === "EMPTY_EVIDENCE" ||
+            err.code === "IRRELEVANT_EVIDENCE" ||
+            err.code === "INSUFFICIENT_DIFFERENTIATION" ||
+            err.code === "INSUFFICIENT_QUALITY"
           ? 422
           : 502;
 
@@ -100,7 +107,16 @@ export async function POST(request: Request) {
       return NextResponse.json(result);
     }
 
-    // Live Mode remains disabled until key + opt-in + successful auth probe.
+    // Never contact Qloo unless Live was explicitly enabled.
+    // A missing in-process verification is refreshed on demand.
+    if (
+      isQlooConfigured() &&
+      isLiveOptInEnabled() &&
+      !isLiveModeAllowed()
+    ) {
+      await verifyQlooAuthentication();
+    }
+
     if (!isLiveModeAllowed()) {
       const reason = !isQlooConfigured()
         ? "Live Mode requires QLOO_API_KEY on the server. API key is still pending — use Demo Mode."

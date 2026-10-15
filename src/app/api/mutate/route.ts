@@ -74,9 +74,12 @@ function agentErrorResponse(err: AgentError) {
     err.code === "CLAIM_UNGROUNDED" ||
     err.code === "MISSING_CONCEPT"
       ? 400
-      : err.code === "LIVE_DISABLED"
-        ? 503
-        : 502;
+      : err.code === "INSUFFICIENT_DIFFERENTIATION" ||
+          err.code === "INSUFFICIENT_QUALITY"
+        ? 422
+        : err.code === "LIVE_DISABLED"
+          ? 503
+          : 502;
 
   return NextResponse.json<ApiErrorBody>(
     {

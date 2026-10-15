@@ -10,7 +10,27 @@ function TraceBody({ trace }: { trace: AgentTraceSummary }) {
       <p className="mb-3 text-xs text-[var(--text-dim)]">
         Deterministic orchestration (no paid LLM). Affinities:{" "}
         {trace.affinityCount}.
+        {trace.opportunities
+          ? ` Opportunities: ${trace.opportunities.accepted} accepted / ${trace.opportunities.rejected} rejected.`
+          : ""}
       </p>
+      {trace.opportunities && trace.opportunities.summaries.length > 0 ? (
+        <details className="mb-3 rounded-lg border border-[var(--line)] bg-[rgba(5,8,16,0.35)] px-2.5 py-2">
+          <summary className="cursor-pointer text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--text-dim)]">
+            Opportunity hypotheses (not demand proof)
+          </summary>
+          <ul className="mt-2 space-y-1">
+            {trace.opportunities.summaries.slice(0, 6).map((row) => (
+              <li
+                key={row}
+                className="text-[11px] leading-relaxed text-[var(--text-muted)]"
+              >
+                {row}
+              </li>
+            ))}
+          </ul>
+        </details>
+      ) : null}
       {trace.warnings.length > 0 ? (
         <ul className="mb-3 space-y-1">
           {trace.warnings.slice(0, 3).map((warning) => (

@@ -58,11 +58,22 @@ export function computeSubjectiveMetrics(
 }
 
 /**
- * Diversity based on influence-set Jaccard distance across concept pairs.
- * 1 = maximally distinct influence sets; 0 = identical.
+ * Diversity based on mechanic fingerprints when present, else influence-set Jaccard.
+ * 1 = maximally distinct; 0 = identical. Single accepted concept → 1 (no padding required).
  */
 export function computeConceptDiversity(concepts: EvaluatedConcept[]): number {
-  if (concepts.length < 2) return 0;
+  if (concepts.length === 0) return 0;
+  if (concepts.length === 1) {
+    return concepts[0]!.spec?.mechanismId ? 1 : 0;
+  }
+
+  const mechanicIds = concepts.map((c) => c.spec?.mechanismId).filter(Boolean);
+  if (mechanicIds.length === concepts.length) {
+    return (
+      new Set(mechanicIds).size / Math.max(1, concepts.length)
+    );
+  }
+
   const sets = concepts.map(
     (c) => new Set(c.culturalInfluences.map((e) => e.id)),
   );

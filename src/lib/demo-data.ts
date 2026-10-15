@@ -96,7 +96,33 @@ function buildEntities(
         category,
         description: `Fictional ${category} signal loosely themed around “${interest}” and ${loc}. Not sourced from Qloo.`,
         affinity: affinity(seed, baseOffset + i),
-        tags: [...item.tags, interest.toLowerCase().slice(0, 24)],
+        tags: [
+          ...item.tags,
+          interest.toLowerCase().slice(0, 24),
+          // Fictional cross-category design signals for deterministic demos.
+          // These are sample attributes, never Qloo-reported affinities.
+          ...(
+            category === "music" ||
+            category === "food" ||
+            category === "places"
+              ? ["participation", "ritual"]
+              : []
+          ),
+          ...(
+            category === "music" ||
+            category === "film" ||
+            category === "brands"
+              ? ["storytelling", "community"]
+              : []
+          ),
+          ...(
+            category === "fashion" ||
+            category === "brands" ||
+            category === "places"
+              ? ["craft", "material"]
+              : []
+          ),
+        ].filter((tag, index, all) => all.indexOf(tag) === index),
       });
     }
   };

@@ -230,13 +230,14 @@ function inferEntityProvenance(
 export function checkConceptCount(
   result: AgentExplorationResult,
 ): ObjectiveCheckResult {
-  const ok = result.concepts.length === 3;
+  const n = result.concepts.length;
+  const ok = n >= 1 && n <= 3;
   return {
     id: "concept_count",
     passed: ok,
     detail: ok
-      ? "Produced exactly three concept candidates."
-      : `Expected 3 concepts, got ${result.concepts.length}.`,
+      ? `Produced ${n} quality-gated concept candidate(s) (allowed 1–3; no padding).`
+      : `Expected 1–3 concepts, got ${n}.`,
   };
 }
 
@@ -245,6 +246,11 @@ export function checkDuplicateConcepts(
 ): ObjectiveCheckResult {
   const titles = result.concepts.map((c) => normalizeTitle(c.title));
   const unique = new Set(titles);
+  const mechanicFingerprints = result.concepts.map(
+    (c) => c.spec?.mechanicFingerprint ?? c.spec?.mechanismId ?? "",
+  );
+  const hasMechanics = mechanicFingerprints.every((f) => f.length > 0);
+  const uniqueMechanics = new Set(mechanicFingerprints);
   const influenceFingerprints = result.concepts.map((c) =>
     c.culturalInfluences
       .map((e) => e.id)
@@ -254,15 +260,21 @@ export function checkDuplicateConcepts(
   const uniqueInfluences = new Set(influenceFingerprints);
 
   const titleDup = unique.size !== titles.length;
-  const influenceDup = uniqueInfluences.size !== influenceFingerprints.length;
+  const mechanicDup =
+    hasMechanics && uniqueMechanics.size !== mechanicFingerprints.length;
+  const influenceDup =
+    !hasMechanics && uniqueInfluences.size !== influenceFingerprints.length;
+
+  const passed = !titleDup && !mechanicDup && !influenceDup;
 
   return {
     id: "duplicate_concepts",
-    passed: !titleDup && !influenceDup,
-    detail:
-      !titleDup && !influenceDup
-        ? "Concept titles and influence sets are distinct."
-        : `Duplicates detected (titles=${titleDup}, influences=${influenceDup}).`,
+    passed,
+    detail: passed
+      ? hasMechanics
+        ? "Concept titles and mechanic fingerprints are distinct."
+        : "Concept titles and influence sets are distinct."
+      : `Duplicates detected (titles=${titleDup}, mechanics=${mechanicDup}, influences=${influenceDup}).`,
   };
 }
 

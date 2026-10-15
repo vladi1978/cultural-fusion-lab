@@ -11,8 +11,12 @@ import type {
 
 /**
  * Deterministic evaluation of concept candidates.
- * Scores are heuristic lab metrics — not Qloo predictions or market forecasts.
- * Relevance is based on influence topical fit, not title substring tricks.
+ *
+ * Separates:
+ * - Structural / measurable heuristics (influence topical fit, claim grounding, mechanism presence)
+ * - Subjective creativity / commercial viability (NOT scored as fact)
+ *
+ * Scores are lab instrumentation — not Qloo predictions or market forecasts.
  */
 export function evaluateConcepts(options: {
   concepts: EvaluatedConcept[];
@@ -66,36 +70,48 @@ function scoreConcept(
     influenceScores.filter((row) => row.relevant).length /
     Math.max(1, influenceScores.length);
 
-  const relevance = clamp(0.65 * topicalAvg + 0.35 * topicalHitRate);
+  let relevance = clamp(0.65 * topicalAvg + 0.35 * topicalHitRate);
   notes.push(
-    "Relevance heuristic uses whole-token topical fit of influences (not title substring tricks; not a Qloo score).",
+    "Relevance heuristic = topical fit of influences (measurable). Not a creativity or demand score.",
   );
 
   const categories = new Set(concept.culturalInfluences.map((e) => e.category));
-  const directionBonus = concept.directionId ? 0.15 : 0;
+  const mechanismBonus = concept.spec?.mechanismId ? 0.2 : concept.directionId ? 0.1 : 0;
+  const journeyBonus =
+    concept.spec && concept.spec.journey.length >= 3 ? 0.15 : 0;
   const originality = clamp(
-    0.45 * Math.min(1, categories.size / 3) +
-      0.25 * Math.min(1, concept.affinityIds.length / 2) +
-      0.15 * directionBonus +
-      0.15 * (concept.mutationNote ? 0.9 : 0.55),
+    0.4 * Math.min(1, categories.size / 3) +
+      0.2 * Math.min(1, concept.affinityIds.length / 2) +
+      0.2 * mechanismBonus +
+      0.1 * journeyBonus +
+      0.1 * (concept.mutationNote ? 0.9 : 0.5),
   );
   notes.push(
-    "Originality heuristic rewards category spread + distinct creative direction — creative metric only; not inflated for marketing.",
+    "Originality heuristic rewards category spread + distinct mechanism structure — structural only; not proof of real-world originality.",
   );
 
   const groundedClaims = concept.claims.filter((c) => c.evidenceIds.length > 0);
   const culturalClaims = concept.claims.filter(
     (c) => c.kind === "cultural_reference",
   );
+  const rationaleGrounding =
+    concept.spec && concept.spec.rationales.length >= 3 ? 0.15 : 0;
   const evidenceCoverage = clamp(
-    0.5 * (groundedClaims.length / Math.max(1, concept.claims.length)) +
-      0.3 *
+    0.45 * (groundedClaims.length / Math.max(1, concept.claims.length)) +
+      0.25 *
         (culturalClaims.every((c) => c.evidenceIds.length > 0) ? 1 : 0.2) +
-      0.2 * Math.min(1, concept.evidenceIds.length / 3),
+      0.15 * Math.min(1, concept.evidenceIds.length / 3) +
+      rationaleGrounding,
   );
   notes.push(
     `Evidence coverage checks claim→evidence links (${groundedClaims.length}/${concept.claims.length} grounded).`,
   );
+
+  if (concept.spec) {
+    notes.push(
+      "ConceptSpec present: quality gates already enforced structural acceptance separately from these scores.",
+    );
+  }
 
   if ((concept.conflictIds?.length ?? 0) > 0) {
     notes.push(
@@ -105,6 +121,11 @@ function scoreConcept(
 
   if (totalEntityCount < 3) {
     notes.push("Sparse entity neighborhood reduced confidence.");
+  }
+
+  // Blend quality-gate structural scores when available (still not creativity proof)
+  if (concept.qualityGate?.accepted && concept.spec) {
+    relevance = clamp(0.85 * relevance + 0.15);
   }
 
   const overall = clamp(

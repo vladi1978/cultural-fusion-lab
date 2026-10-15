@@ -1,3 +1,4 @@
+import type { OpportunityHypothesis } from "./opportunity-types";
 /**
  * Typed contracts for the deterministic Cultural Fusion Lab agent.
  * No paid LLM is used — planning, synthesis, and evaluation are rule-based.
@@ -23,11 +24,22 @@ export type AgentStepId =
   | "relevance"
   | "conflicts"
   | "affinities"
+  | "opportunities"
   | "concepts"
   | "evaluate"
   | "mutate";
 
+/** @deprecated Prefer ConceptSpec.mechanismId — kept for mutation lens fallback. */
 export type CreativeDirectionId = "intimate" | "communal" | "systems";
+
+export type MechanismId =
+  | "spatial_circuit"
+  | "narrative_chapters"
+  | "sonic_set"
+  | "brand_drop"
+  | "material_layer"
+  | "hospitality_course"
+  | "tension_dual";
 
 export interface EntityRelevanceScore {
   entityId: string;
@@ -147,7 +159,7 @@ export interface AgentStepTrace {
 }
 
 export interface AgentTrace {
-  engine: "deterministic-v1";
+  engine: "deterministic-v1" | "deterministic-v2" | "deterministic-v2.1";
   mode: ExplorationRequest["mode"];
   steps: AgentStepTrace[];
   interpreted?: InterpretedObjective;
@@ -160,9 +172,23 @@ export interface AgentTrace {
     intentTerms: string[];
   };
   conflicts?: EvidenceConflict[];
+  /** V2 quality diagnostics when concepts were filtered. */
+  quality?: {
+    candidatesGenerated: number;
+    candidatesAccepted: number;
+    rejectedSummaries: string[];
+  };
+  /** P1 opportunity intelligence diagnostics. */
+  opportunities?: {
+    accepted: number;
+    rejected: number;
+    downgraded: number;
+    summaries: string[];
+  };
 }
 
 export interface AgentExplorationResult extends ExplorationResult {
+  opportunities?: OpportunityHypothesis[];
   concepts: EvaluatedConcept[];
   affinities: CrossCategoryAffinity[];
   conflicts?: EvidenceConflict[];
@@ -204,6 +230,8 @@ export class AgentError extends Error {
     | "IRRELEVANT_EVIDENCE"
     | "MISSING_CONCEPT"
     | "MUTATION_INVALID"
+    | "INSUFFICIENT_DIFFERENTIATION"
+    | "INSUFFICIENT_QUALITY"
     | "CLAIM_UNGROUNDED"
     | "LIVE_DISABLED"
     | "SOURCE_FAILURE";

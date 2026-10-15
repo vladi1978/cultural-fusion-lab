@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 
 import { generateConceptCandidates } from "./concepts";
-import { AgentError } from "./types";
 import type { InterpretedObjective } from "./types";
 
 const interpreted: InterpretedObjective = {
@@ -57,8 +56,8 @@ const entities = [
   },
 ];
 
-describe("concept diversity", () => {
-  it("produces three directionally different concepts", () => {
+describe("concept diversity (Engine V2)", () => {
+  it("produces mechanically distinct concepts from category diversity (1–3)", () => {
     const { concepts } = generateConceptCandidates({
       interpreted,
       entities,
@@ -76,62 +75,58 @@ describe("concept diversity", () => {
       seedKey: "div",
     });
 
-    expect(concepts).toHaveLength(3);
-    expect(new Set(concepts.map((c) => c.directionId)).size).toBe(3);
-    expect(new Set(concepts.map((c) => c.title)).size).toBe(3);
+    expect(concepts.length).toBeGreaterThanOrEqual(1);
+    expect(concepts.length).toBeLessThanOrEqual(3);
+    expect(new Set(concepts.map((c) => c.title)).size).toBe(concepts.length);
+    expect(
+      new Set(concepts.map((c) => c.spec?.mechanismId)).size,
+    ).toBe(concepts.length);
+    expect(
+      new Set(concepts.map((c) => c.spec?.mechanicFingerprint)).size,
+    ).toBe(concepts.length);
 
-    const fingerprints = concepts.map((c) =>
-      c.culturalInfluences
-        .map((e) => e.id)
-        .sort()
-        .join("|"),
-    );
-    expect(new Set(fingerprints).size).toBe(3);
-
-    // Concrete directional differentiation
-    expect(concepts.map((c) => c.directionId).sort()).toEqual([
-      "communal",
-      "intimate",
-      "systems",
-    ]);
-    expect(concepts.some((c) => /Ritual Object|Private Listening|Chamber/i.test(c.title))).toBe(
-      true,
-    );
-    expect(concepts.some((c) => /Gathering|Commons|Night Commons/i.test(c.title))).toBe(
-      true,
-    );
-    expect(concepts.some((c) => /Recombine|Modular|Circuit/i.test(c.title))).toBe(
-      true,
-    );
-
-    // Value / audience / mechanic differ across directions
-    const distinctives = concepts.map((c) => c.narrative?.distinctive ?? c.positioning);
-    expect(distinctives.some((p) => /intimacy|private|ritual/i.test(p))).toBe(true);
-    expect(distinctives.some((p) => /belonging|shared|commons/i.test(p))).toBe(true);
-    expect(distinctives.some((p) => /recombin|modular|kit\/platform/i.test(p))).toBe(
-      true,
-    );
+    // Not the forced intimate/communal/systems trio
+    expect(concepts.every((c) => c.spec?.mechanismId)).toBe(true);
+    expect(
+      concepts.some((c) =>
+        /spatial_circuit|narrative_chapters|sonic_set|brand_drop/.test(
+          c.spec!.mechanismId,
+        ),
+      ),
+    ).toBe(true);
   });
 
-  it("rejects three near-duplicate influence sets", () => {
-    const tiny = entities.slice(0, 3);
-    expect(() =>
-      generateConceptCandidates({
-        interpreted,
-        entities: tiny,
-        evidence: [
-          {
-            id: "ev",
-            source: "mock_demo",
-            label: "bundle",
-            detail: "fixture",
-            relatedEntityIds: tiny.map((e) => e.id),
-            createdAt: "2026-10-11T00:00:00.000Z",
-          },
-        ],
-        affinities: [],
-        seedKey: "dup",
-      }),
-    ).toThrow(AgentError);
+  it("accepts a single strong concept without padding when category diversity is low", () => {
+    const musicOnly = [
+      entities[0]!,
+      {
+        id: "e1b",
+        name: "Second Quartet",
+        category: "music" as const,
+        description: "x",
+        affinity: 0.7,
+        tags: ["jazz", "listening"],
+      },
+    ];
+    const { concepts, quality } = generateConceptCandidates({
+      interpreted,
+      entities: musicOnly,
+      evidence: [
+        {
+          id: "ev",
+          source: "mock_demo",
+          label: "bundle",
+          detail: "fixture",
+          relatedEntityIds: musicOnly.map((e) => e.id),
+          createdAt: "2026-10-11T00:00:00.000Z",
+        },
+      ],
+      affinities: [],
+      seedKey: "one",
+    });
+
+    expect(concepts).toHaveLength(1);
+    expect(concepts[0]!.spec?.mechanismId).toBe("sonic_set");
+    expect(quality.candidatesAccepted).toBe(1);
   });
 });

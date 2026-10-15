@@ -22,6 +22,7 @@ import { isQlooConfigured } from "./client";
 import { getInsights, searchEntities, searchTags } from "./endpoints";
 import { QlooError } from "./errors";
 import { assertLiveModeAllowed } from "./live-gate";
+import { entityTermSet, termsMatch, tokenizeMeaningful } from "../agent/relevance";
 import {
   buildLiveExplorationResult,
   DISCOVERY_ENTITY_TYPES,
@@ -126,59 +127,93 @@ export async function exploreWithQloo(
   const interest = request.culturalInterest.trim();
   const endpointNotes: string[] = [];
   const entityMap = new Map<string, CulturalEntity>();
+  const searchEntityIds = new Set<string>();
+  const insightsEntityIds = new Set<string>();
 
-  for (const type of DISCOVERY_ENTITY_TYPES) {
+  // P1.9: hard budget of three Qloo requests per exploration.
+  // Two searches provide seeds; one Insights call expands relationships.
+  // No automatic retries, tag requests, or synthetic Live fallback.
+  const discoveryTypes: QlooEntityType[] = [
+    "urn:entity:artist",
+    "urn:entity:brand",
+  ];
+
+  for (const type of discoveryTypes) {
     const found = await safeSearch(interest, type, options);
     if (found.length) {
       endpointNotes.push(`GET /search type=${type} (${found.length})`);
     }
     for (const entity of found) {
+      searchEntityIds.add(entity.entity_id);
       entityMap.set(entity.entity_id, mapQlooEntityToCultural(entity));
     }
   }
 
-  const tags = await safeTags(interest, options);
-  if (tags.length) {
-    endpointNotes.push(`GET /v2/tags (${tags.length})`);
+  const tags: QlooTag[] = [];
+  // Only topically validated Search entities may seed indirect Insights.
+  const interestTerms = tokenizeMeaningful(interest);
+  const relevantSeeds = [...entityMap.values()].filter((entity) => {
+    const terms = entityTermSet(entity);
+    return interestTerms.some((term) => termsMatch(term, terms));
+  });
+
+  // Prefer distinct cultural categories before filling remaining seed slots.
+  // This changes seed selection, not Qloo request count or evidence strength.
+  const selectedSeeds: typeof relevantSeeds = [];
+  const coveredCategories = new Set<CulturalEntity["category"]>();
+
+  for (const entity of relevantSeeds) {
+    if (coveredCategories.has(entity.category)) continue;
+    selectedSeeds.push(entity);
+    coveredCategories.add(entity.category);
+    if (selectedSeeds.length === 3) break;
   }
 
-  const seedIds = [...entityMap.keys()].slice(0, 5);
+  for (const entity of relevantSeeds) {
+    if (selectedSeeds.length === 3) break;
+    if (selectedSeeds.some((selected) => selected.id === entity.id)) continue;
+    selectedSeeds.push(entity);
+  }
+
+  const seedIds = selectedSeeds.map((entity) => entity.id);
+
   if (seedIds.length > 0) {
-    for (const type of DISCOVERY_ENTITY_TYPES) {
-      try {
-        const insights = await getInsights(
-          {
-            "filter.type": type,
-            "signal.interests.entities": seedIds.join(","),
-            "signal.interests.tags": tags
-              .slice(0, 3)
-              .map((t) => t.id)
-              .join(","),
-            "filter.location.query": request.location?.trim() || undefined,
-            take: 6,
-          },
-          { fetchImpl: options.fetchImpl, config: options.config },
-        );
-        if (insights.length) {
-          endpointNotes.push(`GET /v2/insights type=${type} (${insights.length})`);
-        }
-        for (const entity of insights) {
-          if (!entityMap.has(entity.entity_id)) {
-            entityMap.set(entity.entity_id, mapQlooEntityToCultural(entity));
-          }
-        }
-      } catch (err) {
-        if (
-          err instanceof QlooError &&
-          (err.code === "UNAUTHORIZED" ||
-            err.code === "FORBIDDEN" ||
-            err.code === "RATE_LIMITED" ||
-            err.code === "TIMEOUT")
-        ) {
-          throw err;
+    try {
+      const insights = await getInsights(
+        {
+          "filter.type": "urn:entity:place",
+          "signal.interests.entities": seedIds.join(","),
+          "filter.location.query": request.location?.trim() || undefined,
+          take: 6,
+        },
+        { fetchImpl: options.fetchImpl, config: options.config },
+      );
+
+      endpointNotes.push(
+        `GET /v2/insights type=urn:entity:place (${insights.length} results)`,
+      );
+
+      for (const entity of insights) {
+        insightsEntityIds.add(entity.entity_id);
+        if (!entityMap.has(entity.entity_id)) {
+          entityMap.set(entity.entity_id, mapQlooEntityToCultural(entity));
         }
       }
+    } catch (err) {
+      if (
+        err instanceof QlooError &&
+        (err.code === "UNAUTHORIZED" ||
+          err.code === "FORBIDDEN" ||
+          err.code === "RATE_LIMITED" ||
+          err.code === "TIMEOUT")
+      ) {
+        throw err;
+      }
+      // Other Insights failures do not create synthetic evidence.
+      endpointNotes.push("GET /v2/insights unavailable (non-auth error)");
     }
+  } else {
+    endpointNotes.push("GET /v2/insights skipped (no topical seed entities)");
   }
 
   const entities = [...entityMap.values()].sort(
@@ -201,6 +236,9 @@ export async function exploreWithQloo(
     request: { ...request, mode: "live" },
     entities,
     tags,
+    searchEntityIds: [...searchEntityIds],
+    insightsEntityIds: [...insightsEntityIds],
+    insightsSeedIds: seedIds,
     endpointNotes:
       endpointNotes.length > 0 ? endpointNotes : ["no endpoint notes"],
   });
