@@ -267,6 +267,14 @@ function buildOperatingProgram(options: {
   const where = interpreted.location ? ` in ${interpreted.location}` : "";
   const a = output === "experience" ? "An" : "A";
 
+  // Retail evidence alone does not authorize a membership/drop experience.
+  // The requested outcome must explicitly call for commercial access mechanics.
+  const retailProgramRelevant =
+    /\b(membership|memberships|member access|members-only|exclusive access|exclusive brand|limited drops?|product drops?|retail drops?|subscription|subscriptions)\b/i.test(
+      interpreted.rawObjective
+    );
+
+
   // Tension / contrast → dual-mode program
   if (
     opportunity.kind === "tension" ||
@@ -310,7 +318,7 @@ function buildOperatingProgram(options: {
     });
   }
 
-  if (isRetailSignal(signals.primary)) {
+  if (retailProgramRelevant && isRetailSignal(signals.primary)) {
     return retailCheckpointProgram({
       mechanismId, opportunity, output, interest, where, a,
       hinge, secondary, signals,
@@ -375,8 +383,9 @@ function buildOperatingProgram(options: {
 
   // Retail / membership
   if (
-    isRetailSignal(signals.primary) ||
-    signals.sharedNonInterest.some(isRetailSignal)
+    retailProgramRelevant &&
+    (isRetailSignal(signals.primary) ||
+      signals.sharedNonInterest.some(isRetailSignal))
   ) {
     return retailCheckpointProgram({
       mechanismId,

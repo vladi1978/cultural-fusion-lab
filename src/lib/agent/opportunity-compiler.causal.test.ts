@@ -415,6 +415,110 @@ describe("P1.1 causal opportunity compiler", () => {
     ).toBe(true);
   });
 
+
+  it("P9.57 festival relevance: retail evidence must not impose membership mechanics", () => {
+    const festival: InterpretedObjective = {
+      ...interpreted,
+      rawObjective: "Design an immersive cultural festival combining Korean street food and Brazilian dance",
+      culturalInterest: "Korean street food and Brazilian dance",
+      location: "São Paulo, Brazil",
+      outputCategory: "experience",
+    };
+    const entities: CulturalEntity[] = [
+      {
+        id: "food1",
+        name: "Seoul Food Collective",
+        category: "food",
+        description: "Korean street food collective",
+        affinity: 0.8,
+        tags: ["food", "retail", "street"],
+      },
+      {
+        id: "place1",
+        name: "São Paulo Dance Plaza",
+        category: "places",
+        description: "Brazilian dance venue",
+        affinity: 0.75,
+        tags: ["dance", "retail", "festival"],
+      },
+    ];
+    const opportunity = {
+      id: "opp-festival-retail",
+      kind: "complementarity" as const,
+      title: "Food and dance cultural participation",
+      supportingEntityIds: ["food1", "place1"],
+      supportingSignalIds: ["sig-food1-tag-retail", "sig-place1-tag-retail"],
+      whyCreativelyUseful: "Hypothesis: shared retail operations could support participation.",
+      designImplication: "Explore a culturally meaningful festival participation sequence.",
+      uncertainty: "No validated market demand.",
+      unsupportedAssumptions: ["No verified attendance preferences."],
+      evidenceIds: ["ev-festival"],
+      suggestedMechanismId: "hospitality_course" as const,
+      status: "accepted" as const,
+      relationshipIds: [],
+    };
+    const spec = compileConceptFromOpportunity({
+      opportunity,
+      mechanismId: "hospitality_course",
+      interpreted: festival,
+      influences: entities,
+    });
+    expect(spec).not.toBeNull();
+    expect(spec!.operatingProgramId).not.toBe("retail_checkpoint");
+  });
+
+  it("P9.57 membership brand: explicit commercial objective permits retail checkpoints", () => {
+    const brand: InterpretedObjective = {
+      ...interpreted,
+      rawObjective: "Create an exclusive cultural brand with membership access and limited product drops",
+      culturalInterest: "exclusive cultural membership",
+      location: "São Paulo, Brazil",
+      outputCategory: "brand",
+    };
+    const entities: CulturalEntity[] = [
+      {
+        id: "brand1",
+        name: "Members Collective",
+        category: "brands",
+        description: "Membership brand",
+        affinity: 0.8,
+        tags: ["membership", "retail", "community"],
+      },
+      {
+        id: "brand2",
+        name: "Limited Editions Studio",
+        category: "brands",
+        description: "Limited edition releases",
+        affinity: 0.75,
+        tags: ["membership", "drop", "retail"],
+      },
+    ];
+    const opportunity = {
+      id: "opp-brand-membership",
+      kind: "complementarity" as const,
+      title: "Shared membership operations",
+      supportingEntityIds: ["brand1", "brand2"],
+      supportingSignalIds: ["sig-brand1-tag-membership", "sig-brand2-tag-membership"],
+      whyCreativelyUseful: "Hypothesis: membership supports limited cultural releases.",
+      designImplication: "Create membership checkpoints for limited drops.",
+      uncertainty: "No validated market demand.",
+      unsupportedAssumptions: ["No verified purchase preferences."],
+      evidenceIds: ["ev-brand"],
+      suggestedMechanismId: "brand_drop" as const,
+      status: "accepted" as const,
+      relationshipIds: [],
+    };
+    const spec = compileConceptFromOpportunity({
+      opportunity,
+      mechanismId: "brand_drop",
+      interpreted: brand,
+      influences: entities,
+    });
+    expect(spec).not.toBeNull();
+    expect(spec!.operatingProgramId).toBe("retail_checkpoint");
+    expect(spec!.causalBindings!.length).toBeGreaterThan(0);
+  });
+
   it("compileConceptFromOpportunity produces bindings and program fingerprint", () => {
     const entities = [
       {
