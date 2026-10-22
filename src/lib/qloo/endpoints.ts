@@ -6,6 +6,7 @@
  * - GET /v2/insights — docs.qloo.com Insights OpenAPI
  */
 
+import { ValidationBudgetError } from "../validation-session";
 import "server-only";
 
 import { qlooRequest, type FetchLike, type QlooClientConfig } from "./client";
@@ -124,6 +125,7 @@ export async function probeAuthentication(
     );
     return { ok: true };
   } catch (err) {
+    if (err instanceof ValidationBudgetError) throw err;
     if (err instanceof QlooError) {
       return { ok: false, error: err };
     }

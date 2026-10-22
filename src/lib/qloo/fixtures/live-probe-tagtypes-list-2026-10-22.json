@@ -1,0 +1,63 @@
+{
+  "notes": "Real Qloo responses recorded 2026-10-22 by scripts/qloo-tagtype-probe.mjs (1-request cap).",
+  "results": [
+    {
+      "query": "cycling",
+      "types": "urn:tag:genre:place,urn:tag:category:place",
+      "status": 200,
+      "tags": [
+        {
+          "id": "urn:tag:category:place:cycling_park",
+          "name": "Cycling park",
+          "type": "urn:tag:category:place"
+        },
+        {
+          "id": "urn:tag:genre:place:cycling_park",
+          "name": "Cycling Park",
+          "type": "urn:tag:genre:place"
+        },
+        {
+          "id": "urn:tag:category:place:cycling_association",
+          "name": "Cycling association",
+          "type": "urn:tag:category:place"
+        },
+        {
+          "id": "urn:tag:genre:place:hotel:cycling_park",
+          "name": "Cycling Park",
+          "type": "urn:tag:genre:place"
+        },
+        {
+          "id": "urn:tag:genre:place:restaurant:cycling_park",
+          "name": "Cycling Park",
+          "type": "urn:tag:genre:place"
+        },
+        {
+          "id": "urn:tag:genre:place:cycling_association",
+          "name": "Cycling Association",
+          "type": "urn:tag:genre:place"
+        },
+        {
+          "id": "urn:tag:category:place:road_cycling",
+          "name": "Road cycling",
+          "type": "urn:tag:category:place"
+        },
+        {
+          "id": "urn:tag:category:place:indoor_cycling",
+          "name": "Indoor cycling",
+          "type": "urn:tag:category:place"
+        },
+        {
+          "id": "urn:tag:genre:place:indoor_cycling",
+          "name": "Indoor Cycling",
+          "type": "urn:tag:genre:place"
+        },
+        {
+          "id": "urn:tag:genre:place:road_cycling",
+          "name": "Road Cycling",
+          "type": "urn:tag:genre:place"
+        }
+      ]
+    }
+  ],
+  "requestsUsed": 1
+}

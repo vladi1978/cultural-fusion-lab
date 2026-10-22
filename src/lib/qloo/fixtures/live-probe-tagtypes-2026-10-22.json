@@ -1,0 +1,55 @@
+{
+  "notes": "Real Qloo responses recorded 2026-10-22 by scripts/qloo-tagtype-probe.mjs (2-request cap).",
+  "results": [
+    {
+      "query": "jazz",
+      "types": "urn:tag:genre:place",
+      "status": 200,
+      "tags": [
+        {
+          "id": "urn:tag:genre:place:jazz_club",
+          "name": "Jazz club",
+          "type": "urn:tag:genre:place"
+        },
+        {
+          "id": "urn:tag:genre:place:restaurant:jazz_club",
+          "name": "Jazz Club",
+          "type": "urn:tag:genre:place"
+        },
+        {
+          "id": "urn:tag:genre:place:hotel:jazz_club",
+          "name": "Jazz Club",
+          "type": "urn:tag:genre:place"
+        }
+      ]
+    },
+    {
+      "query": "cycling",
+      "types": "urn:tag:category:place",
+      "status": 200,
+      "tags": [
+        {
+          "id": "urn:tag:category:place:cycling_park",
+          "name": "Cycling park",
+          "type": "urn:tag:category:place"
+        },
+        {
+          "id": "urn:tag:category:place:cycling_association",
+          "name": "Cycling association",
+          "type": "urn:tag:category:place"
+        },
+        {
+          "id": "urn:tag:category:place:road_cycling",
+          "name": "Road cycling",
+          "type": "urn:tag:category:place"
+        },
+        {
+          "id": "urn:tag:category:place:indoor_cycling",
+          "name": "Indoor cycling",
+          "type": "urn:tag:category:place"
+        }
+      ]
+    }
+  ],
+  "requestsUsed": 2
+}

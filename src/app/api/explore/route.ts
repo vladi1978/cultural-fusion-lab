@@ -1,4 +1,7 @@
+import { getValidationBudget, ValidationBudgetError, type ValidationBudget } from "@/lib/validation-session";
 import { NextResponse } from "next/server";
+import { CreativeCompositionError } from "@/lib/agent/creative/compose";
+import { OperationalDesignError } from "@/lib/agent/creative/operational-design";
 
 import {
   AgentError,
@@ -78,6 +81,14 @@ function agentErrorResponse(err: AgentError) {
   );
 }
 
+function findBudgetError(err: unknown): ValidationBudgetError | null {
+  for (let e: unknown = err, depth = 0; e && depth < 5; depth++) {
+    if (e instanceof ValidationBudgetError) return e;
+    e = e instanceof Error ? (e as Error & { cause?: unknown }).cause : null;
+  }
+  return null;
+}
+
 export async function POST(request: Request) {
   let json: unknown;
   try {
@@ -101,10 +112,27 @@ export async function POST(request: Request) {
     );
   }
 
+  let budget: ValidationBudget | null = null;
+  let startedExplore = false;
   try {
     if (exploration.mode === "demo") {
-      const result = await runExplorationAgent(exploration);
+      const result = await runExplorationAgent(exploration, { fidelityPolicy: "triage" });
       return NextResponse.json(result);
+    }
+
+    // Shared validation session (opt-in): one live exploration per session, duplicates rejected,
+    // every Qloo/Anthropic request reserved against the shared budget. Config-only checks run first so a
+    // misconfigured server does not burn the one-shot.
+    if (isQlooConfigured() && isLiveOptInEnabled()) {
+      budget = getValidationBudget();
+      if (budget) {
+        budget.startRun("explore");
+        startedExplore = true;
+        const u = budget.snapshot().used;
+        console.log(`[CFL SESSION] validation session ACTIVE (used so far: qloo ${u.qlooHttp}, anthropic logical ${u.anthropicLogical}, anthropic http ${u.anthropicHttp})`);
+      } else {
+        console.log("[CFL SESSION] validation session NOT ACTIVE: no shared call budget is enforced for this run (start the server with CFL_VALIDATION_SESSION=true)");
+      }
     }
 
     // Never contact Qloo unless Live was explicitly enabled.
@@ -133,16 +161,39 @@ export async function POST(request: Request) {
       );
     }
 
-    const { createQlooSource } = await import(
-      "@/lib/agent/sources/qloo-source"
-    );
+    // Creative mode (hosted/local model): run the agent's own planned probes.
+    // Otherwise keep the legacy 3-request live source unchanged.
+    const { isCreativeLlmEnabled } = await import("@/lib/agent/creative");
+    const liveSource = isCreativeLlmEnabled()
+      ? (await import("@/lib/agent/sources/qloo-plan-source")).createQlooPlanSource()
+      : (await import("@/lib/agent/sources/qloo-source")).createQlooSource();
     const result = await runExplorationAgent(exploration, {
-      source: createQlooSource(),
+      source: liveSource,
+      fidelityPolicy: "triage",
     });
     return NextResponse.json(result);
   } catch (err) {
+    console.error("[CFL EXPLORE ERROR]", err);
+    const budgetErr = findBudgetError(err);
+    if (budgetErr) {
+      return NextResponse.json<ApiErrorBody>(
+        { error: budgetErr.message, code: `VALIDATION_${budgetErr.code}` },
+        { status: budgetErr.code === "DUPLICATE_RUN" || budgetErr.code === "RUN_IN_FLIGHT" ? 409 : budgetErr.code === "BUDGET_EXHAUSTED" ? 429 : 503 },
+      );
+    }
     if (err instanceof AgentError) {
       return agentErrorResponse(err);
+    }
+
+    if (err instanceof CreativeCompositionError || err instanceof OperationalDesignError) {
+      return NextResponse.json<ApiErrorBody>(
+        {
+          error: "The generated concept did not pass the creative quality checks.",
+          code: "CREATIVE_QUALITY_REJECTED",
+          details: err.message,
+        },
+        { status: 422 },
+      );
     }
     const payload = toApiErrorPayload(
       err instanceof QlooError
@@ -159,5 +210,7 @@ export async function POST(request: Request) {
       },
       { status: payload.status },
     );
+  } finally {
+    if (budget && startedExplore) budget.finishRun("explore");
   }
 }

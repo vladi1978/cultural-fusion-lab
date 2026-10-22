@@ -22,6 +22,24 @@ export type LabStage =
   | "concepts"
   | "mutation";
 
+/** Where a live entity came from and what Qloo said about its place. Preserved to the final concept. */
+export interface QlooProvenance {
+  provider: "qloo";
+  /** Qloo entity_id (identical to CulturalEntity.id for live entities). */
+  entityId: string;
+  /** Qloo type URN, e.g. urn:entity:place. */
+  entityType?: string;
+  retrievedVia: "search" | "insights";
+  /** Documented Insights signal tags that produced this entity (insights only). */
+  /** Tags used for retrieval. With tagUse "filter" Qloo only returns entities that carry the tag (hard filter). */
+  signalTagIds?: string[];
+  signalTagNames?: string[];
+  /** "filter" = documented hard filter (filter.tags); "signal" = soft taste signal (signal.interests.tags). */
+  tagUse?: "filter" | "signal";
+  /** Place facts exactly as Qloo returned them. Never geocoded or guessed here. */
+  place?: { address?: string; city?: string; region?: string; subregion?: string; country?: string; lat?: number; lon?: number };
+}
+
 export interface CulturalEntity {
   id: string;
   name: string;
@@ -31,6 +49,8 @@ export interface CulturalEntity {
   /** Explicit Qloo affinity only; never inferred from popularity. */
   apiReportedAffinity?: number;
   tags: string[];
+  /** Present on live Qloo entities only. */
+  qloo?: QlooProvenance;
 }
 
 export interface EvidenceItem {
@@ -173,6 +193,27 @@ export interface OperatingRule {
  * Professional concept specification (Engine V2).
  * Prefer this over thin narrative templates for judge-facing rigor.
  */
+/** A concrete operational decision (a stop, sequence, activity, component, partner...) grounded in validated evidence. */
+export interface EvidenceDecision {
+  id: string;
+  kind: "location" | "sequence" | "activity" | "component" | "material" | "partner" | "audience" | "channel" | "other";
+  decision: string;
+  /** The attribute of the entity the decision relies on (name, a tag, its place, its description). */
+  basis: string;
+  /** Resolved by code from collected data, never written by the model. */
+  entities: Array<{ id: string; name: string; qlooEntityId?: string; retrievedVia?: "search" | "insights"; address?: string }>;
+}
+
+export interface EvidenceRejection { entityId: string; name: string; reason: string }
+
+export interface EvidenceSufficiency {
+  status: "sufficient" | "insufficient" | "not_applicable";
+  /** Entities that passed geographic and topical validation and may ground decisions. */
+  eligibleEntityIds: string[];
+  reason: string;
+  rejections: EvidenceRejection[];
+}
+
 export interface ConceptSpec {
   name: string;
   proposition: string;
@@ -206,6 +247,10 @@ export interface ConceptSpec {
   structuralFingerprint?: string;
   operatingRules?: OperatingRule[];
   causalBindings?: CausalBinding[];
+  /** Operational decisions grounded in validated Qloo evidence (may be empty). */
+  evidenceDecisions?: EvidenceDecision[];
+  /** Whether enough relevant evidence existed to ground any decision. */
+  evidenceSufficiency?: EvidenceSufficiency;
 }
 
 export interface QualityGateCheck {

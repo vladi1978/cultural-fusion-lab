@@ -1,3 +1,13 @@
+import { identifyFunctionalNeed } from "./functional-needs";
+import { enrichChoiceDependentExperience } from "./choice-operations";
+import { extractFunctionalContract, functionalAlignmentScore } from "./functional-contract";
+import { interpretProductIntent } from "./product-intent";
+import { buildProductBlueprint } from "./product-blueprint";
+import { proposeComplementaryTransfers, selectPhysicalDesignSignal } from "./cultural-transfer";
+import { proposeFunctionalInnovation } from "./functional-innovation";
+import { proposeFunctionalMechanism } from "./functional-mechanism";
+import { assessFunctionalDifferentiation } from "./functional-differentiation";
+import { describePhysicalProduct } from "./physical-product";
 /**
  * Engine V2 causal concept synthesis.
  * Mechanism families are driven by hinge category + tags — not intimate/communal/systems.
@@ -160,7 +170,20 @@ export function synthesizeConceptCandidates(options: {
     out.push(built);
   }
 
+  // P10.23-C: one shared post-synthesis pass for opportunity and catalog routes.
+  // Preserve existing evidence-bound journey steps and rationales; never add unbound steps.
+  if (interpreted.outputCategory === "experience") {
+    for (const candidate of out) {
+      candidate.spec = enrichChoiceDependentExperience(interpreted.rawObjective, candidate.spec);
+    }
+  }
+
+  // P10.23-A: order candidates by explicit functional affordance;
+  // this heuristic does NOT certify operational compliance.
+  const contract = extractFunctionalContract(interpreted.rawObjective);
   return out.sort((a, b) => {
+    const delta = functionalAlignmentScore(contract, b.spec) - functionalAlignmentScore(contract, a.spec);
+    if (delta !== 0) return delta;
     const aOpp = a.opportunityId ? 0 : 1;
     const bOpp = b.opportunityId ? 0 : 1;
     if (aOpp !== bOpp) return aOpp - bOpp;
@@ -295,7 +318,28 @@ function buildMechanismCandidate(options: {
   if (!compat.applicable) return null;
 
   const support = pickSupport(entities, [hinge.id], 2, `${seedKey}:${mech.id}`);
-  const secondary = support[0] ?? hinge;
+
+  // P9.185: prioritize an observed textile signal for an explicitly
+  // requested glare-reduction lamp, without manufacturing evidence.
+  const explicitGlareLamp =
+    mech.id === "brand_drop" &&
+    interpreted.outputCategory === "product" &&
+    identifyFunctionalNeed(
+      interpreted.rawObjective,
+      "table lamp",
+    ).need === "reduce_glare";
+
+  const textileSupport = explicitGlareLamp
+    ? entities.find(
+        (entity) =>
+          entity.id !== hinge.id &&
+          entity.tags.some((tag) =>
+            /\b(textile|woven|fabric)\b/i.test(tag),
+          ),
+      )
+    : undefined;
+
+  const secondary = textileSupport ?? support[0] ?? hinge;
   const influences = uniqueEntities([hinge, secondary, ...support]).slice(0, 3);
   if (influences.length < 2) return null;
 
@@ -408,7 +452,7 @@ function buildSpec(options: {
   const output = interpreted.outputCategory;
   const primarySignal = selectObservedSignal(hinge);
   const secondarySignal = selectObservedSignal(secondary);
-  const productForm = productFormFor(mech.id, interest, output);
+  const productForm = productFormFor(mech.id, interest, output, interpreted.rawObjective, influences);
 
   const drafted = mechanismBlueprint({
     mech,
@@ -421,7 +465,9 @@ function buildSpec(options: {
     secondarySignal,
     conflict,
     productForm,
+    rawObjective: interpreted.rawObjective,
   });
+
 
   const influenceMap: InfluenceMapEntry[] = influences.map((e) => {
     const role =
@@ -527,9 +573,48 @@ function productFormFor(
   mech: MechanismId,
   interest: string,
   output: OutputCategory,
+  rawObjective: string,
+  influences: CulturalEntity[],
 ): string | undefined {
+  // P9.208 explicit product identity
+  // Preserve the requested physical object across mechanism families.
+  if (output === "product") {
+    const explicitProduct = interpretProductIntent(rawObjective);
+    if (explicitProduct.kind === "explicit") {
+      return explicitProduct.object;
+    }
+  }
+
   if (output !== "product" && output !== "brand") return undefined;
   const topic = interest.trim() || "culture";
+
+  // P9.130: Interpret the requested object before inferring a design.
+  // Cultural material signals must not replace an explicit product request.
+  const intent =
+    output === "product"
+      ? interpretProductIntent(rawObjective)
+      : { kind: "unspecified" as const };
+
+  if (output === "product" && mech === "brand_drop") {
+    // Explicit user intent always outranks cultural material inference.
+    // All catalog objects follow the same path into Product Blueprint.
+    if (intent.kind === "explicit") {
+      return intent.object;
+    }
+
+    // A design hypothesis is permitted only when the object is unspecified.
+    const homeIntent =
+      /\b(home|household|furniture|interior|homeware)\b/i.test(rawObjective);
+    const observedTags = influences
+      .flatMap((entity) => entity.tags)
+      .join(" ")
+      .toLowerCase();
+
+    if (homeIntent && /\b(ceramic)\b/i.test(observedTags)) {
+      return "handmade ceramic organizer tray to hold and organize everyday home objects";
+    }
+  }
+
   switch (mech) {
     case "material_layer":
       return `reconfigurable ${topic} layer garment kit`;
@@ -563,6 +648,7 @@ function mechanismBlueprint(options: {
   secondarySignal: string;
   conflict?: EvidenceConflict;
   productForm?: string;
+  rawObjective: string;
 }): {
   name: string;
   proposition: string;
@@ -583,9 +669,25 @@ function mechanismBlueprint(options: {
     secondarySignal,
     conflict,
     productForm,
+    rawObjective,
   } = options;
 
-  const name = professionalName(interest, hinge, mech.id);
+  const baseName = professionalName(interest, hinge, mech.id);
+  const productNameLead = titleCase(interest)
+    .split(/\s+/)
+    .filter((word) => word.length > 1)
+    .slice(0, 2)
+    .join(" ");
+  const physicalHomeProduct =
+    output === "product" && mech.id === "brand_drop";
+  const name =
+    physicalHomeProduct && /\btable lamp\b/i.test(productForm ?? "")
+      ? `${productNameLead} Table Lamp`
+      : physicalHomeProduct && /\bcoffee brewing kit\b/i.test(productForm ?? "")
+      ? `${productNameLead} Brewing Kit`
+      : physicalHomeProduct && /\borganizer tray\b/i.test(productForm ?? "")
+        ? `${productNameLead} Organizer Tray`
+        : baseName;
   const a = article(output);
   const hingeInterp = supportedCategoryInterpretation(hinge, primarySignal);
   const secInterp = supportedCategoryInterpretation(secondary, secondarySignal);
@@ -653,6 +755,7 @@ function mechanismBlueprint(options: {
       primarySignal,
       secondarySignal,
       productForm,
+      rawObjective,
       hingeInterp,
       secInterp,
       mech,
@@ -739,6 +842,7 @@ type DraftArgs = {
   primarySignal: string;
   secondarySignal: string;
   productForm?: string;
+  rawObjective?: string;
   hingeInterp: string;
   secInterp: string;
   mech: MechDef;
@@ -946,6 +1050,83 @@ function draftBrandDrop(o: DraftArgs) {
   const { name, a, output, interest, where, hinge, secondary, primarySignal, secondarySignal, productForm, hingeInterp, secInterp, mech } = o;
   if (output === "product") {
     const form = productForm ?? `limited ${interest} drop SKU`;
+    // P9.136: Explicit physical objects use one reusable blueprint.
+    const blueprint = buildProductBlueprint(
+      interpretProductIntent(o.mech.id === "brand_drop"
+        ? o.productForm ?? ""
+        : ""),
+    );
+
+    if (blueprint) {
+      const primaryDesignSignal = selectPhysicalDesignSignal(
+        hinge.tags,
+        primarySignal,
+      );
+      const secondaryDesignSignal = selectPhysicalDesignSignal(
+        secondary.tags,
+        secondarySignal,
+      );
+
+      const physicalIntent = interpretProductIntent(
+        o.productForm ?? "",
+      );
+
+      const components = physicalIntent.kind === "explicit"
+        ? physicalIntent.components
+        : [];
+
+      const [primaryTransfer, secondaryTransfer] =
+        proposeComplementaryTransfers(
+          { source: hinge.name, signal: primaryDesignSignal },
+          { source: secondary.name, signal: secondaryDesignSignal },
+          components,
+        );
+
+      const innovation = proposeFunctionalInnovation(
+        blueprint.object,
+        [primaryTransfer, secondaryTransfer],
+      );
+
+      const functionalMechanism = proposeFunctionalMechanism(
+        blueprint.object,
+        [primaryTransfer, secondaryTransfer],
+        o.rawObjective ?? "",
+      );
+
+      const functionalDifferentiation = assessFunctionalDifferentiation(
+        blueprint.object,
+        functionalMechanism,
+      );
+
+      const transferSummary = [primaryTransfer, secondaryTransfer]
+        .map((transfer) =>
+          `Source: ${transfer.source}; observed: ${transfer.observedSignal}; ` +
+          `status: ${transfer.status}; proposed design: ${transfer.designDecision}; ` +
+          `verification: ${transfer.verification}`,
+        )
+        .join(" ");
+
+    return pack({
+        name,
+        proposition: `A product: ${blueprint.proposition} Cultural material and form choices remain design hypotheses${where}.`,
+        audience: `People seeking a functional ${blueprint.object}${where}.`,
+        context: `Physical product design influenced by “${hinge.name}” (${primarySignal}) and “${secondary.name}” (${secondarySignal}); no verified demand claim.`,
+        mechanics: `${blueprint.mechanics} Cultural design transfer: ${transferSummary} Functional innovation assessment: status: ${innovation.status}; hypothesis: ${innovation.hypothesis}; prototype test: ${innovation.prototypeTest} Functional mechanism: status: ${functionalMechanism.status}; origin: ${functionalMechanism.origin}; functional evidence: ${functionalMechanism.functionalEvidence}; mechanism: ${functionalMechanism.mechanism}; user action: ${functionalMechanism.userAction}; measurable effect: ${functionalMechanism.measurableEffect}; verification: ${functionalMechanism.verification} Functional differentiation assessment: status: ${functionalDifferentiation.status}; baseline: ${functionalDifferentiation.baseline}; proposed difference: ${functionalDifferentiation.proposedDifference}; measurement plan: ${functionalDifferentiation.measurementPlan}; competitive evidence: ${functionalDifferentiation.competitiveEvidence}; performance evidence: ${functionalDifferentiation.performanceEvidence}; novelty claim allowed: ${functionalDifferentiation.noveltyClaimAllowed}; conclusion: ${functionalDifferentiation.conclusion}`,
+        journey: steps([
+          ["User", blueprint.journey[0], [hinge.id]],
+          ["User", blueprint.journey[1], [hinge.id, secondary.id]],
+          ["User", blueprint.journey[2], [secondary.id]],
+        ]),
+        hinge,
+        secondary,
+        primarySignal,
+        secondarySignal,
+        hingeInterp,
+        secInterp,
+        mech,
+      });
+    }
+
     return pack({
       name,
       proposition: `${a} product: ${form} released through invite → checkpoint → public commons${where}.`,

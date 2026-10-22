@@ -10,6 +10,7 @@ interface ExplorationFormProps {
   onChange: (next: ExplorationRequest) => void;
   onSubmit: () => void;
   isLoading: boolean;
+  live?: boolean;
 }
 
 export function ExplorationForm({
@@ -17,6 +18,7 @@ export function ExplorationForm({
   onChange,
   onSubmit,
   isLoading,
+  live = false,
 }: ExplorationFormProps) {
   const update = <K extends keyof ExplorationRequest>(
     key: K,
@@ -37,11 +39,13 @@ export function ExplorationForm({
         <div>
           <h2 className="font-display text-2xl text-white">Exploration Input</h2>
           <p className="mt-1 text-sm text-[var(--text-muted)]">
-            Frame a creative objective and cultural interest. Demo Mode runs
-            entirely on fictional sample data.
+            Frame a creative objective and cultural interest.{" "}
+            {live
+              ? "Live Mode queries the real Qloo API (a small, capped number of requests per run)."
+              : "Demo Mode runs entirely on fictional sample data."}
           </p>
         </div>
-        <span className="badge badge-demo">Demo Mode</span>
+        <span className={live ? "badge" : "badge badge-demo"}>{live ? "Live Mode" : "Demo Mode"}</span>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">

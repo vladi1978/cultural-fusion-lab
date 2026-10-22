@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { generateConceptCandidates } from "./concepts";
+import { auditConceptSimilarity } from "../eval/concept-similarity";
 import type { InterpretedObjective } from "./types";
 
 const interpreted: InterpretedObjective = {
@@ -84,6 +85,15 @@ describe("concept diversity (Engine V2)", () => {
     expect(
       new Set(concepts.map((c) => c.spec?.mechanicFingerprint)).size,
     ).toBe(concepts.length);
+
+    // Accepted concepts must also pass the independent semantic audit.
+    const similarityFindings = auditConceptSimilarity(
+      concepts,
+      [interpreted.culturalInterest, interpreted.location ?? ""],
+    );
+    expect(
+      similarityFindings.filter((finding) => finding.flagged),
+    ).toEqual([]);
 
     // Not the forced intimate/communal/systems trio
     expect(concepts.every((c) => c.spec?.mechanismId)).toBe(true);

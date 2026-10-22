@@ -138,6 +138,28 @@ describe("topical relevance gate", () => {
     expect(score.matchedTerms).toHaveLength(0);
   });
 
+  it("rejects a multi-cultural brief supported only by incidental demo tags", () => {
+    const interpreted: InterpretedObjective = {
+      ...interpretedJazz,
+      rawObjective: "Design an interactive wellness experience",
+      culturalInterest: "Japanese Shinrin-yoku and Nordic sauna culture",
+      outputCategory: "experience",
+    };
+    const entities = ["music", "food", "brands"].map((category, index) => ({
+      id: `demo-${index}`,
+      name: `Demo entity ${index}`,
+      category: category as "music" | "food" | "brands",
+      description: "A cultural creative fixture",
+      affinity: 0.6,
+      tags: ["culture", "ambient", "creative"],
+    }));
+    const gate = applyRelevanceGate({ entities, interpreted });
+    expect(gate.kept).toHaveLength(0);
+    expect(() => assertTopicalNeighborhood(gate, entities.length)).toThrowError(
+      /Insufficient cultural-interest coverage/,
+    );
+  });
+
   it("matches coffee interest via cafe alias without substring tricks", () => {
     const score = scoreEntityRelevance(
       {

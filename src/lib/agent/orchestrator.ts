@@ -1,3 +1,4 @@
+import { buildCreativeDemoEvidence } from "./sources/creative-demo-source";
 /**
  * Deterministic agentic orchestration engine for Cultural Fusion Lab.
  *
@@ -22,6 +23,11 @@ import { DEMO_DISCLAIMER } from "../types";
 import { identifyAffinities } from "./affinities";
 import { detectEvidenceConflicts } from "./conflicts";
 import { generateConceptCandidates } from "./concepts";
+import { deriveCreativeFrame } from "./creative/frame";
+import { createAnthropicCreativeModel, createOllamaCreativeModel, isCreativeLlmEnabled, type CreativeModel } from "./creative/model";
+import { planCreativeSearches } from "./creative/plan";
+import { composeCreativeConcepts } from "./creative/compose";
+import { assessEvidenceEligibility, type EligibilityReport } from "./evidence/eligibility";
 import { evaluateConcepts } from "./evaluate";
 import { interpretObjective } from "./interpret";
 import { mutateAndReevaluate } from "./mutate";
@@ -50,6 +56,10 @@ export interface OrchestratorOptions {
   now?: () => string;
   /** Defaults to deterministic ReasoningProvider (no LLM). */
   reasoning?: ReasoningProvider;
+  /** Inject a replay model for free end-to-end tests. */
+  creativeModel?: CreativeModel;
+  /** Opt-in creative fidelity triage; legacy remains the default. */
+  fidelityPolicy?: "legacy" | "triage";
   /** Optional local observation hook; does not change the public result. */
   onOpportunities?: (opportunities: OpportunityHypothesis[]) => void;
 }
@@ -112,8 +122,26 @@ export async function runExplorationAgent(
     now,
   );
 
+  // Opt-in only: no model call in existing deterministic mode.
+  const localOllamaEnabled =
+    process.env.CFL_CREATIVE_LLM_ENABLED === "true" &&
+    process.env.CFL_CREATIVE_PROVIDER === "ollama";
+
+  const creativeMode =
+    Boolean(options.creativeModel) ||
+    localOllamaEnabled ||
+    isCreativeLlmEnabled();
+
+  const creativeModel = creativeMode
+    ? (options.creativeModel ??
+        (localOllamaEnabled
+          ? createOllamaCreativeModel()
+          : createAnthropicCreativeModel()))
+    : null;
+  const creativeFrame = creativeModel ? await deriveCreativeFrame(request, creativeModel) : null;
+
   // 2. Plan searches
-  const plan = planSearches(interpreted);
+  const plan = creativeFrame ? planCreativeSearches(interpreted, creativeFrame) : planSearches(interpreted);
   pushStep(
     steps,
     {
@@ -223,6 +251,28 @@ export async function runExplorationAgent(
         relatedEntityIds: [entity.id],
         createdAt: stamp(now),
       });
+    }
+  }
+
+  // 3b'. Decision eligibility: which evidence may ground a concrete operating decision (live Qloo evidence only).
+  let eligibility: EligibilityReport | undefined;
+  if (topicalEntities.some((e) => e.qloo)) {
+    eligibility = assessEvidenceEligibility({
+      entities: topicalEntities,
+      request,
+    });
+    pushStep(
+      steps,
+      {
+        id: "eligibility",
+        title: "Evidence eligibility for design decisions",
+        status: eligibility.sufficiency.status === "sufficient" ? "ok" : "empty",
+        detail: `${eligibility.sufficiency.reason}${eligibility.rejected.length ? ` Not eligible: ${eligibility.rejected.slice(0, 6).map((r) => `${r.name} (${r.reasons[0]?.split(":")[0] ?? "rejected"})`).join("; ")}.` : ""}`,
+      },
+      now,
+    );
+    if (eligibility.sufficiency.status === "insufficient") {
+      warnings.push(eligibility.sufficiency.reason);
     }
   }
 
@@ -340,7 +390,11 @@ export async function runExplorationAgent(
     concepts: drafts,
     hypothesisEvidence,
     quality,
-  } = generateConceptCandidates({
+  } = creativeFrame && creativeModel ? await composeCreativeConcepts({
+    frame: creativeFrame, interpreted, entities: topicalEntities, evidence, model: creativeModel,
+    fidelityPolicy: options.fidelityPolicy,
+    eligibility,
+  }) : generateConceptCandidates({
     interpreted,
     entities: topicalEntities,
     evidence,
@@ -351,6 +405,19 @@ export async function runExplorationAgent(
     opportunities: selectedOpportunities,
   });
   evidence = [...evidence, ...hypothesisEvidence];
+
+  if (creativeFrame && options.fidelityPolicy === "triage") {
+    warnings.push(
+      "Creative concepts are provisional drafts. Passing structural quality gates does not establish semantic compliance, cultural authenticity, or commercial viability."
+    );
+
+    if (creativeFrame.offBrief.length > 0) {
+      warnings.push(
+        "Off-brief exclusions have not been independently verified for semantic paraphrases. Human review is required before treating these concepts as compliant."
+      );
+    }
+  }
+
   pushStep(
     steps,
     {
@@ -399,7 +466,7 @@ export async function runExplorationAgent(
   }
 
   const agentTrace: AgentTrace = {
-    engine: "deterministic-v2.1",
+    engine: creativeFrame ? "creative-llm-v1" : "deterministic-v2.1",
     mode: request.mode,
     steps,
     interpreted,

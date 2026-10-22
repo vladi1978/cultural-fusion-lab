@@ -155,6 +155,38 @@ export function executeCausalDecision(
     };
   }
 
+  if (draft.action.verb === "evaluate") {
+    const optionIndex = draft.decision.options.indexOf(selectedOption);
+
+    if (optionIndex < 0) {
+      return {
+        accepted: false,
+        state: "unsupported",
+        explanation: "The selected experimental condition is invalid.",
+      };
+    }
+
+    const consequence = draft.decision.consequencesByOption[selectedOption];
+
+    if (!consequence?.trim()) {
+      return {
+        accepted: false,
+        state: "unsupported",
+        explanation: "The experimental condition lacks a defined consequence.",
+      };
+    }
+
+    return {
+      accepted: true,
+      state: "preview",
+      explanation:
+        `Experimental condition ${optionIndex + 1} selected. ` +
+        `${consequence} ` +
+        "This is a proposed test configuration, not an observed result. " +
+        "No participant behavior, performance improvement, or market demand has been established.",
+    };
+  }
+
   if (draft.action.verb === "configure") {
     const optionIndex = draft.decision.options.indexOf(selectedOption);
 

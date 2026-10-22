@@ -22,6 +22,7 @@ export type AgentStepId =
   | "plan"
   | "collect"
   | "relevance"
+  | "eligibility"
   | "conflicts"
   | "affinities"
   | "opportunities"
@@ -50,6 +51,7 @@ export interface EntityRelevanceScore {
 
 export interface RelevanceGateResult {
   intentTerms: string[];
+  primaryInterestTerms: string[];
   kept: CulturalEntity[];
   rejected: CulturalEntity[];
   scores: EntityRelevanceScore[];
@@ -159,7 +161,7 @@ export interface AgentStepTrace {
 }
 
 export interface AgentTrace {
-  engine: "deterministic-v1" | "deterministic-v2" | "deterministic-v2.1";
+  engine: "deterministic-v1" | "deterministic-v2" | "deterministic-v2.1" | "creative-llm-v1";
   mode: ExplorationRequest["mode"];
   steps: AgentStepTrace[];
   interpreted?: InterpretedObjective;

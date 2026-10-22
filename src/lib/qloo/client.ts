@@ -10,6 +10,7 @@
 
 import "server-only";
 
+import { getValidationBudget } from "../validation-session";
 import { httpStatusToQlooError, QlooError } from "./errors";
 
 export interface QlooClientConfig {
@@ -67,6 +68,9 @@ export async function qlooRequest<T = unknown>(
       "QLOO_API_KEY is not configured on the server. Use Demo Mode until a key is available.",
     );
   }
+
+  // Shared validation-session budget: reserve BEFORE sending (fail-closed; no-op unless a session is active).
+  getValidationBudget()?.reserve("qlooHttp");
 
   const url = buildUrl(config.baseUrl, options.path, options.query);
   const headers = new Headers();
@@ -145,6 +149,8 @@ export async function qlooFetch(
       "QLOO_API_KEY is not configured. Use Demo Mode or set the server environment variable.",
     );
   }
+
+  getValidationBudget()?.reserve("qlooHttp");
 
   const url = buildUrl(config.baseUrl, path);
   const headers = new Headers(init.headers);

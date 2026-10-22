@@ -16,6 +16,7 @@ import type {
   OutputCategory,
 } from "../types";
 import { assessMechanismCompatibility } from "./mechanism-compat";
+import { interpretProductIntent } from "./product-intent";
 import { hasRepeatedWords, isGenericSuffixChain } from "./naming";
 import type { OpportunityHypothesis } from "./opportunity-types";
 import {
@@ -69,6 +70,17 @@ export function compileConceptFromOpportunity(
   } = input;
 
   if (influences.length < 2) return null;
+
+  // P9.211: preserve explicit physical-product intent
+  // Opportunity operating programs currently synthesize cultural kits.
+  // Defer recognized physical objects to the catalog product blueprint.
+  if (
+    interpreted.outputCategory === "product" &&
+    interpretProductIntent(interpreted.rawObjective).kind === "explicit"
+  ) {
+    return null;
+  }
+
 
   const hinge =
     influences.find((e) =>

@@ -50,3 +50,21 @@ next-env.d.ts
 
 # Local development backups (never commit)
 /project-backups/
+.env*
+
+# hosted-model spend ledger (local only)
+.cfl-spend-ledger.json
+
+# Local backups, probes and run state (never commit)
+*.bak
+*.bak-*
+*.backup-*
+*.tsbuildinfo
+/.*-backup/
+/.p10-*/
+/scripts-probe/
+/qloo-probe-result.json
+.cfl-qloo-*-used
+.cfl-validation-session.json
+.cfl-validation-session.json.lock
+*.cfl-*-backup

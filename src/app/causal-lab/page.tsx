@@ -56,7 +56,7 @@ export default function CausalLabPage() {
       try {
         const savedRequest =
           typeof window !== "undefined"
-            ? window.sessionStorage.getItem("cfl-creative-journey-request")
+            ? window.sessionStorage.getItem("cfl-creative-journey-context-v2")
             : null;
 
         if (customJourney && !savedRequest) {
@@ -239,9 +239,7 @@ export default function CausalLabPage() {
               <h2 className="mt-2 text-xl font-semibold">
                 {item.observations.map(observation => observation.signal).join(" × ")}
               </h2>
-              <p className="mt-2 text-sm text-slate-400">
-                {item.action.object}
-              </p>
+              <p className="mt-2 line-clamp-2 text-sm text-slate-400">{item.opportunityHypothesis}</p>
             </button>
           ))}
         </section>
@@ -299,9 +297,7 @@ export default function CausalLabPage() {
                     </span>
                     <h3 className="font-semibold text-white">{step.title}</h3>
                   </div>
-                  <p className="text-sm leading-relaxed text-slate-400">
-                    {step.description}
-                  </p>
+                  <p className="line-clamp-3 text-sm leading-relaxed text-slate-400">{step.description}</p>
                 </div>
               ))}
             </div>

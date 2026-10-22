@@ -43,7 +43,30 @@ export function mapSubtypeToCategory(
   return "other";
 }
 
-export function mapQlooEntityToCultural(entity: QlooEntity): CulturalEntity {
+export interface QlooRetrievalMeta {
+  retrievedVia: "search" | "insights";
+  signalTagIds?: string[];
+  signalTagNames?: string[];
+  tagUse?: "filter" | "signal";
+}
+
+function placeFacts(entity: QlooEntity): NonNullable<NonNullable<CulturalEntity["qloo"]>["place"]> | undefined {
+  const props = (entity.properties ?? {}) as Record<string, unknown>;
+  const geo = (props.geocode && typeof props.geocode === "object" ? props.geocode : {}) as Record<string, unknown>;
+  const str = (v: unknown) => (typeof v === "string" && v.trim() ? v.trim() : undefined);
+  const place = {
+    address: str(props.address),
+    city: str(geo.city),
+    region: str(geo.admin1_region),
+    subregion: str(geo.admin2_region),
+    country: str(geo.country),
+    lat: entity.location?.lat,
+    lon: entity.location?.lon,
+  };
+  return Object.values(place).some(v => v !== undefined) ? place : undefined;
+}
+
+export function mapQlooEntityToCultural(entity: QlooEntity, meta?: QlooRetrievalMeta): CulturalEntity {
   const reportedAffinity = entity.query?.affinity ?? entity.affinity;
   const affinityRaw = reportedAffinity ?? entity.popularity ?? 0.5;
   const affinity = Math.max(0, Math.min(1, Number(affinityRaw) || 0.5));
@@ -76,6 +99,18 @@ export function mapQlooEntityToCultural(entity: QlooEntity): CulturalEntity {
         ? reportedAffinity
         : undefined,
     tags,
+    ...(meta
+      ? {
+          qloo: {
+            provider: "qloo" as const,
+            entityId: entity.entity_id,
+            entityType: entity.subtype ?? entity.type ?? entity.types?.[0],
+            retrievedVia: meta.retrievedVia,
+            ...(meta.signalTagIds?.length ? { signalTagIds: meta.signalTagIds, signalTagNames: meta.signalTagNames, ...(meta.tagUse ? { tagUse: meta.tagUse } : {}) } : {}),
+            ...(placeFacts(entity) ? { place: placeFacts(entity) } : {}),
+          },
+        }
+      : {}),
   };
 }
 
@@ -214,7 +249,7 @@ export function buildLiveExplorationResult(options: {
           id: `ev-qloo-insights-${Date.now()}`,
           source: "verified_api",
           label: "Qloo Insights results",
-          detail: "Entities returned by GET /v2/insights using collected seed entities. Relationship relevance must still be validated.",
+          detail: "Entities returned by GET /v2/insights using collected seed entities or documented signal tags. Relationship relevance must still be validated.",
           relatedEntityIds: options.insightsEntityIds,
           insightSeedEntityIds: options.insightsSeedIds ?? [],
           createdAt: now,

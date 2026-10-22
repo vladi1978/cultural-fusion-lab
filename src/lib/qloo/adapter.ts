@@ -286,7 +286,7 @@ export async function mutateWithQloo(
       { fetchImpl: options.fetchImpl, config: options.config },
     );
     candidates = insights
-      .map(mapQlooEntityToCultural)
+      .map((entity) => mapQlooEntityToCultural(entity))
       .filter(
         (e) =>
           e.id !== outgoing.id &&

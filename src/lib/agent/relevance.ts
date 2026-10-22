@@ -44,6 +44,9 @@ const STOPWORDS = new Set([
   "object",
   "kit",
   "late",
+  // Generic framing is not evidence for a specific cultural tradition.
+  "culture",
+  "cultures",
 ]);
 
 /** Conservative aliases — not Taste Graph edges. */
@@ -217,12 +220,18 @@ export function applyRelevanceGate(options: {
 
   const notes = [
     `Intent terms (primary interest first): [${allTerms.join(", ")}]`,
+    // P10.21: Multi-anchor cultural interest coverage. Only direct,
+    // independently observed entity text counts toward lexical coverage.
+    // Indirect Qloo Insights links may preserve entities, but do not prove
+    // that each named cultural anchor is represented in source attributes.
+    `Cultural anchors (directly matched): [${unique(scores.flatMap((s) => s.matchedTerms)).join(", ")}]`,
     `Whole-token matching only — substring false positives are rejected.`,
     `Kept ${kept.length}/${options.entities.length} topical entities; rejected ${rejected.length}.`,
   ];
 
   return {
     intentTerms: allTerms,
+    primaryInterestTerms: interestTerms,
     kept,
     rejected,
     scores,
@@ -246,6 +255,20 @@ export function assertTopicalNeighborhood(
       "EMPTY_EVIDENCE",
       "Insufficient cultural evidence volume to build concepts.",
       `Collected ${collectedCount} entities before relevance filtering.`,
+    );
+  }
+
+  // P10.21: Fail closed when a multi-part cultural interest has only
+  // incidental overlap with the supplied evidence. This is a conservative
+  // lexical coverage check, not proof of cultural or semantic relevance.
+  const primary = gate.primaryInterestTerms;
+  const matched = new Set(gate.scores.flatMap((s) => s.matchedTerms));
+  const covered = primary.filter((term) => matched.has(term));
+  if (primary.length >= 3 && covered.length < Math.ceil(primary.length / 2)) {
+    throw new AgentError(
+      "IRRELEVANT_EVIDENCE",
+      "Insufficient cultural-interest coverage in collected evidence; cannot responsibly generate concepts for this brief.",
+      `Direct cultural anchors=${covered.length}/${primary.length}; matched=[${covered.join(", ")}]; missing=[${primary.filter((t) => !matched.has(t)).join(", ")}].`,
     );
   }
 

@@ -1,0 +1,138 @@
+{
+  "notes": "Real Qloo responses recorded 2026-10-22 by scripts/qloo-filter-probe.mjs (2-request cap). Hard filter.tags.",
+  "location": "Louisville, Kentucky",
+  "results": {
+    "urn:tag:genre:place:jazz_club": {
+      "status": 200,
+      "entities": [
+        {
+          "entity_id": "AFC61A67-25E7-49E9-9B91-BC33AE23FFA8",
+          "name": "Jimmy Can't Dance",
+          "subtype": "urn:entity:place",
+          "type": "urn:entity",
+          "tags": [
+            {
+              "name": "Speakeasy style",
+              "id": "urn:tag:setting:qloo:speakeasy_style"
+            },
+            {
+              "name": "$20 to $30",
+              "id": "urn:tag:cost_description:place:20_to_30"
+            },
+            {
+              "name": "On site parking",
+              "id": "urn:tag:parking:place:on_site_parking"
+            },
+            {
+              "name": "Beer",
+              "id": "urn:tag:offerings:place:beer"
+            },
+            {
+              "name": "Downtown louisville",
+              "id": "urn:tag:neighborhood_characteristic:qloo:downtown_louisville"
+            },
+            {
+              "name": "Cocktails",
+              "id": "urn:tag:offerings:place:cocktails"
+            },
+            {
+              "name": "Place",
+              "id": "urn:tag:genre:place"
+            },
+            {
+              "name": "Unique",
+              "id": "urn:tag:ambience:qloo:unique"
+            },
+            {
+              "name": "Birthday",
+              "id": "urn:tag:event:place:birthday"
+            },
+            {
+              "name": "American express",
+              "id": "urn:tag:credit_card:place:american_express"
+            },
+            {
+              "name": "Historic",
+              "id": "urn:tag:decor:qloo:historic"
+            },
+            {
+              "name": "Local history",
+              "id": "urn:tag:interests:qloo:local_history"
+            },
+            {
+              "name": "Mastercard",
+              "id": "urn:tag:credit_card:place:mastercard"
+            },
+            {
+              "name": "Bustling",
+              "id": "urn:tag:neighborhood_characteristic:qloo:bustling"
+            },
+            {
+              "name": "Discover",
+              "id": "urn:tag:credit_card:place:discover"
+            },
+            {
+              "name": "Touristic",
+              "id": "urn:tag:neighborhood_characteristic:qloo:touristic"
+            },
+            {
+              "name": "Date night",
+              "id": "urn:tag:event:place:date_night"
+            },
+            {
+              "name": "Speakeasy",
+              "id": "urn:tag:decor:qloo:speakeasy"
+            },
+            {
+              "name": "Casual",
+              "id": "urn:tag:decor:qloo:casual"
+            },
+            {
+              "name": "Tourist attraction",
+              "id": "urn:tag:genre:place:tourist_attraction"
+            },
+            {
+              "name": "Free street parking",
+              "id": "urn:tag:parking:place:free_street_parking"
+            },
+            {
+              "name": "Stylish",
+              "id": "urn:tag:ambience:qloo:stylish"
+            },
+            {
+              "name": "Special occasion",
+              "id": "urn:tag:visit_intent:qloo:special_occasion"
+            },
+            {
+              "name": "Subterranean",
+              "id": "urn:tag:setting:qloo:subterranean"
+            }
+          ],
+          "properties": {
+            "description": "Intimate subterranean jazz club beneath exposed brick walls offering classic cocktails and a speakeasy atmosphere.",
+            "address": "730 E Market St Louisville, KY 40202",
+            "geocode": {
+              "city": "Louisville",
+              "name": null,
+              "metro": null,
+              "country": "United States",
+              "country_code": "US",
+              "admin1_region": "Kentucky",
+              "admin2_region": "Jefferson County"
+            }
+          },
+          "location": {
+            "lat": 38.2528637,
+            "lon": -85.7391146,
+            "geohash": "dng18gwxjfge"
+          }
+        }
+      ]
+    },
+    "urn:tag:category:place:cycling_park": {
+      "status": 200,
+      "entities": []
+    }
+  },
+  "requestsUsed": 2
+}

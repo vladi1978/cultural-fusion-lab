@@ -20,9 +20,9 @@ function TraceBody({ trace }: { trace: AgentTraceSummary }) {
             Opportunity hypotheses (not demand proof)
           </summary>
           <ul className="mt-2 space-y-1">
-            {trace.opportunities.summaries.slice(0, 6).map((row) => (
+            {trace.opportunities.summaries.slice(0, 6).map((row, index) => (
               <li
-                key={row}
+                key={`${index}-${row}`}
                 className="text-[11px] leading-relaxed text-[var(--text-muted)]"
               >
                 {row}
@@ -33,9 +33,9 @@ function TraceBody({ trace }: { trace: AgentTraceSummary }) {
       ) : null}
       {trace.warnings.length > 0 ? (
         <ul className="mb-3 space-y-1">
-          {trace.warnings.slice(0, 3).map((warning) => (
+          {trace.warnings.slice(0, 3).map((warning, index) => (
             <li
-              key={warning}
+              key={`${index}-${warning}`}
               className="rounded-lg border border-[rgba(212,168,83,0.35)] bg-[rgba(212,168,83,0.08)] px-2.5 py-1.5 text-[11px] text-[#fde68a]"
             >
               {warning}

@@ -311,8 +311,15 @@ export function ConceptCards({
 
               <div className="mt-5">
                 <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--text-dim)]">
-                  Influence set
+                  {spec?.evidenceDecisions ? "Retrieved evidence" : "Influence set"}
                 </p>
+                {spec?.evidenceDecisions && (
+                  <p className="mb-2 text-[11px] leading-snug text-[var(--text-dim)]">
+                    {spec.evidenceDecisions.length
+                      ? "Entities marked “grounds a decision” changed an operating decision; the rest were retrieved but did not."
+                      : "Retrieved from Qloo and validated, but no operating decision in this concept is grounded in them."}
+                  </p>
+                )}
                 <ul className="space-y-1.5">
                   {concept.culturalInfluences.map((entity) => {
                     const role = spec?.influenceMap.find(
@@ -329,6 +336,13 @@ export function ConceptCards({
                         </span>
                         {" · "}
                         {entity.name}
+                        {spec?.evidenceDecisions && (
+                          <span className="ml-2 text-[10px] text-[var(--text-dim)]">
+                            {spec.evidenceDecisions.some((d) => d.entities.some((x) => x.id === entity.id))
+                              ? "· grounds a decision"
+                              : "· retrieved, grounds no decision"}
+                          </span>
+                        )}
                       </li>
                     );
                   })}

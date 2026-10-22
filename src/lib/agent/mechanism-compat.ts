@@ -5,6 +5,7 @@
 
 import type { EntityCategory, OutputCategory } from "../types";
 import type { MechanismId } from "./types";
+import { interpretProductIntent } from "./product-intent";
 
 export interface MechanismCompatResult {
   applicable: boolean;
@@ -41,6 +42,54 @@ export function assessMechanismCompatibility(options: {
   const { mechanismId, output, hingeCategory, culturalInterest, rawObjective } =
     options;
   const corpus = `${culturalInterest} ${rawObjective}`;
+
+  // P9.209: explicit physical-product mechanism integrity
+  // Only the currently implemented physical-product blueprint may
+  // synthesize an explicitly requested catalog object.
+  if (
+    output === "product" &&
+    interpretProductIntent(rawObjective).kind === "explicit" &&
+    mechanismId !== "brand_drop"
+  ) {
+    return {
+      applicable: false,
+      needsBridge: false,
+      reason:
+        "The requested physical product requires the implemented physical-product blueprint; this mechanism cannot preserve its requested function.",
+    };
+  }
+
+
+  // P9.89 explicit home-product constraint
+  // The cultural hinge must not override the requested product category.
+  if (
+    output === "product" &&
+    mechanismId === "material_layer" &&
+    /\b(home|household|furniture|interior|homeware|table lamp|desk lamp|lamp|lighting fixture|shelf|cabinet|planter|vase|rug)\b/i.test(rawObjective) &&
+    !/\b(clothing|garment|apparel|fashion product|wearable)\b/i.test(rawObjective)
+  ) {
+    return {
+      applicable: false,
+      needsBridge: false,
+      reason: "material_layer rejected: requested home product is incompatible with the current apparel-specific synthesis.",
+    };
+  }
+
+  // P9.199: preserve explicitly requested physical objects.
+  // The current material_layer blueprint produces apparel, so it cannot
+  // substitute clothing for a recognized non-apparel product.
+  if (
+    output === "product" &&
+    mechanismId === "material_layer" &&
+    interpretProductIntent(rawObjective).kind === "explicit"
+  ) {
+    return {
+      applicable: false,
+      needsBridge: false,
+      reason:
+        "material_layer rejected: apparel-specific synthesis cannot replace an explicitly requested physical product.",
+    };
+  }
 
   // Native category→mechanism alignment (no bridge required)
   const native = nativeFit(mechanismId, hingeCategory, output);

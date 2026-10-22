@@ -1,0 +1,1056 @@
+{
+  "notes": "Real Qloo responses recorded 2026-10-22 by scripts/qloo-discovery-probe.mjs (3-request cap).",
+  "location": "Louisville, Kentucky",
+  "tagsJazzClub": [
+    {
+      "id": "urn:tag:genre:place:jazz_club",
+      "name": "Jazz club",
+      "type": "urn:tag:genre:place"
+    },
+    {
+      "id": "urn:tag:category:place:jazz_club",
+      "name": "Jazz club",
+      "type": "urn:tag:category:place"
+    },
+    {
+      "id": "urn:tag:genre:place:restaurant:jazz_club",
+      "name": "Jazz Club",
+      "type": "urn:tag:genre:place"
+    },
+    {
+      "id": "urn:tag:genre:place:hotel:jazz_club",
+      "name": "Jazz Club",
+      "type": "urn:tag:genre:place"
+    },
+    {
+      "id": "urn:tag:nearby_attraction:qloo:jazz_club",
+      "name": "Jazz Club",
+      "type": "urn:tag:nearby_attraction:qloo"
+    },
+    {
+      "id": "urn:tag:setting:qloo:jazz_club",
+      "name": "Jazz Club",
+      "type": "urn:tag:setting:qloo"
+    },
+    {
+      "id": "urn:tag:ambience:qloo:jazz_club_atmosphere",
+      "name": "Jazz Club Atmosphere",
+      "type": "urn:tag:ambience:qloo"
+    },
+    {
+      "id": "urn:tag:cuisine:qloo:jazz_club_cuisine",
+      "name": "Jazz Club Cuisine",
+      "type": "urn:tag:cuisine:qloo"
+    },
+    {
+      "id": "urn:tag:nearby_attraction:qloo:jazz_clubs",
+      "name": "Jazz Clubs",
+      "type": "urn:tag:nearby_attraction:qloo"
+    },
+    {
+      "id": "urn:tag:decor:qloo:jazz_club_style",
+      "name": "Jazz Club Style",
+      "type": "urn:tag:decor:qloo"
+    }
+  ],
+  "tagsLiveMusic": [
+    {
+      "id": "urn:tag:good_for:qloo:live_music",
+      "name": "Live Music",
+      "type": "urn:tag:good_for:qloo"
+    },
+    {
+      "id": "urn:tag:amenity:qloo:live_music",
+      "name": "Live Music",
+      "type": "urn:tag:amenity:qloo"
+    },
+    {
+      "id": "urn:tag:ambience:qloo:live_music",
+      "name": "Live Music",
+      "type": "urn:tag:ambience:qloo"
+    },
+    {
+      "id": "urn:tag:keyword:qloo:live_music",
+      "name": "Live music",
+      "type": "urn:tag:keyword:qloo"
+    },
+    {
+      "id": "urn:tag:category:place:live_music_venue",
+      "name": "Live music venue",
+      "type": "urn:tag:category:place"
+    },
+    {
+      "id": "urn:tag:genre:place:live_music_venue",
+      "name": "Live music venue",
+      "type": "urn:tag:genre:place"
+    },
+    {
+      "id": "urn:tag:genre:place:restaurant:live_music_bar",
+      "name": "Live music bar",
+      "type": "urn:tag:genre:place"
+    },
+    {
+      "id": "urn:tag:category:place:live_music_bar",
+      "name": "Live music bar",
+      "type": "urn:tag:category:place"
+    },
+    {
+      "id": "urn:tag:genre:place:restaurant:live_music_venue",
+      "name": "Live Music Venue",
+      "type": "urn:tag:genre:place"
+    },
+    {
+      "id": "urn:tag:genre:place:hotel:live_music_venue",
+      "name": "Live Music Venue",
+      "type": "urn:tag:genre:place"
+    }
+  ],
+  "chosenPlaceTag": {
+    "id": "urn:tag:genre:place:jazz_club",
+    "name": "Jazz club",
+    "type": "urn:tag:genre:place"
+  },
+  "insightsPlaceByChosenTag": [
+    {
+      "entity_id": "0009326F-6A7F-4D5B-96F1-6D0E20C3F851",
+      "name": "Joseph's Salon and Spa",
+      "subtype": "urn:entity:place",
+      "type": "urn:entity",
+      "tags": [
+        {
+          "name": "Nail salon",
+          "id": "urn:tag:category:place:nail_salon"
+        },
+        {
+          "name": "Mastercard",
+          "id": "urn:tag:credit_card:place:mastercard"
+        },
+        {
+          "name": "Hair salon",
+          "id": "urn:tag:category:place:hair_salon"
+        },
+        {
+          "name": "Gender neutral restroom",
+          "id": "urn:tag:amenities:place:gender_neutral_restroom"
+        },
+        {
+          "name": "Credit cards",
+          "id": "urn:tag:payments:place:credit_cards"
+        },
+        {
+          "name": "Hair salon",
+          "id": "urn:tag:genre:place:hair_salon"
+        },
+        {
+          "name": "Wheelchair accessible restroom",
+          "id": "urn:tag:accessibility:place:wheelchair_accessible_restroom"
+        },
+        {
+          "name": "Good for kids",
+          "id": "urn:tag:children:place:good_for_kids"
+        },
+        {
+          "name": "Lgbtq+ friendly",
+          "id": "urn:tag:inclusivity:place:lgbtq_friendly"
+        },
+        {
+          "name": "Wheelchair accessible entrance",
+          "id": "urn:tag:accessibility:place:wheelchair_accessible_entrance"
+        },
+        {
+          "name": "Beauty salon",
+          "id": "urn:tag:genre:place:beauty_salon"
+        },
+        {
+          "name": "Beauty salon",
+          "id": "urn:tag:category:place:beauty_salon"
+        },
+        {
+          "name": "Appointment required",
+          "id": "urn:tag:planning:place:appointment_required"
+        },
+        {
+          "name": "Place",
+          "id": "urn:tag:genre:place"
+        },
+        {
+          "name": "Spa",
+          "id": "urn:tag:category:place:spa"
+        },
+        {
+          "name": "Spa",
+          "id": "urn:tag:genre:place:spa"
+        },
+        {
+          "name": "Checks",
+          "id": "urn:tag:payments:place:checks"
+        },
+        {
+          "name": "Wheelchair accessible parking lot",
+          "id": "urn:tag:accessibility:place:wheelchair_accessible_parking_lot"
+        },
+        {
+          "name": "Debit cards",
+          "id": "urn:tag:payments:place:debit_cards"
+        },
+        {
+          "name": "American express",
+          "id": "urn:tag:credit_card:place:american_express"
+        },
+        {
+          "name": "Visa",
+          "id": "urn:tag:credit_card:place:visa"
+        },
+        {
+          "name": "Appointments recommended",
+          "id": "urn:tag:planning:place:appointments_recommended"
+        },
+        {
+          "name": "Nail salon",
+          "id": "urn:tag:genre:place:nail_salon"
+        },
+        {
+          "name": "Discover",
+          "id": "urn:tag:credit_card:place:discover"
+        }
+      ],
+      "properties": {
+        "description": "Full-service Aveda lifestyle salon-spa offering hair, nail, and skin treatments, retail Aveda products, curbside pickup and online ordering in Louisville's Dutchmans Lane.",
+        "address": "3938 Dutchmans Ln Louisville, KY 40207",
+        "geocode": {
+          "city": "St. Matthews",
+          "name": null,
+          "metro": null,
+          "country": "United States",
+          "country_code": "US",
+          "admin1_region": "Kentucky",
+          "admin2_region": "Jefferson County"
+        }
+      },
+      "location": {
+        "lat": 38.233176,
+        "lon": -85.63544999999999,
+        "geohash": "dng1e24hmkf9"
+      }
+    },
+    {
+      "entity_id": "000C0BDA-9258-4B0E-8353-E55A9D845C07",
+      "name": "Sandy's Pet Shop",
+      "subtype": "urn:entity:place",
+      "type": "urn:entity",
+      "tags": [
+        {
+          "name": "Free parking lot",
+          "id": "urn:tag:parking:place:free_parking_lot"
+        },
+        {
+          "name": "Pet supply store",
+          "id": "urn:tag:category:place:pet_supply_store"
+        },
+        {
+          "name": "Wheelchair accessible parking lot",
+          "id": "urn:tag:accessibility:place:wheelchair_accessible_parking_lot"
+        },
+        {
+          "name": "Shopping",
+          "id": "urn:tag:genre:place:shopping"
+        },
+        {
+          "name": "In store pickup",
+          "id": "urn:tag:service_options:place:in_store_pickup"
+        },
+        {
+          "name": "Quick visit",
+          "id": "urn:tag:planning:place:quick_visit"
+        },
+        {
+          "name": "Pet supply store",
+          "id": "urn:tag:genre:place:pet_supply_store"
+        },
+        {
+          "name": "Pet treats",
+          "id": "urn:tag:offerings:place:pet_treats"
+        },
+        {
+          "name": "Mastercard",
+          "id": "urn:tag:credit_card:place:mastercard"
+        },
+        {
+          "name": "On site parking",
+          "id": "urn:tag:parking:place:on_site_parking"
+        },
+        {
+          "name": "Onsite services",
+          "id": "urn:tag:service_options:place:onsite_services"
+        },
+        {
+          "name": "Nfc mobile payments",
+          "id": "urn:tag:payments:place:nfc_mobile_payments"
+        },
+        {
+          "name": "Place",
+          "id": "urn:tag:genre:place"
+        },
+        {
+          "name": "Credit cards",
+          "id": "urn:tag:payments:place:credit_cards"
+        },
+        {
+          "name": "Debit cards",
+          "id": "urn:tag:payments:place:debit_cards"
+        }
+      ],
+      "properties": {
+        "description": "Family-owned pet supply store known for an extensive aquarium collection, knowledgeable staff, and a wide selection of reptiles and small pets.",
+        "address": "1421 Hess Ln Louisville, KY 40217",
+        "geocode": {
+          "city": "Louisville",
+          "name": null,
+          "metro": null,
+          "country": "United States",
+          "country_code": "US",
+          "admin1_region": "Kentucky",
+          "admin2_region": "Jefferson County"
+        }
+      },
+      "location": {
+        "lat": 38.2118111,
+        "lon": -85.7217632,
+        "geohash": "dng13k5rfju7"
+      }
+    },
+    {
+      "entity_id": "001CC979-932C-4F60-A11C-394F4CCFE00D",
+      "name": "Zaxbys Chicken Fingers & Buffalo Wings",
+      "subtype": "urn:entity:place",
+      "type": "urn:entity",
+      "tags": [
+        {
+          "name": "Fast food",
+          "id": "urn:tag:genre:place:restaurant:fast_food"
+        },
+        {
+          "name": "Afternoon",
+          "id": "urn:tag:time_of_day_fit:qloo:afternoon"
+        },
+        {
+          "name": "Midday",
+          "id": "urn:tag:time_of_day_fit:qloo:midday"
+        },
+        {
+          "name": "Crinkle cut fries",
+          "id": "urn:tag:menu_highlight:qloo:crinkle_cut_fries"
+        },
+        {
+          "name": "American",
+          "id": "urn:tag:cuisine:qloo:american"
+        },
+        {
+          "name": "Evening",
+          "id": "urn:tag:time_of_day_fit:qloo:evening"
+        },
+        {
+          "name": "Takeout",
+          "id": "urn:tag:activity_type:qloo:takeout"
+        },
+        {
+          "name": "Solo diners",
+          "id": "urn:tag:customer_identity:qloo:solo_diners"
+        },
+        {
+          "name": "Takeout",
+          "id": "urn:tag:service_type:qloo:takeout"
+        },
+        {
+          "name": "Fast food",
+          "id": "urn:tag:culinary_style:qloo:fast_food"
+        },
+        {
+          "name": "Soft drinks",
+          "id": "urn:tag:beverage_offering:qloo:soft_drinks"
+        },
+        {
+          "name": "Bottled water",
+          "id": "urn:tag:beverage_offering:qloo:bottled_water"
+        },
+        {
+          "name": "Click and collect",
+          "id": "urn:tag:service_type:qloo:click_and_collect"
+        },
+        {
+          "name": "Fast casual",
+          "id": "urn:tag:decor:qloo:fast_casual"
+        },
+        {
+          "name": "Foodies",
+          "id": "urn:tag:customer_identity:qloo:foodies"
+        },
+        {
+          "name": "Buffalo wings",
+          "id": "urn:tag:menu_highlight:qloo:buffalo_wings"
+        },
+        {
+          "name": "Accessible seating",
+          "id": "urn:tag:amenity:qloo:accessible_seating"
+        },
+        {
+          "name": "Young professionals",
+          "id": "urn:tag:customer_identity:qloo:young_professionals"
+        },
+        {
+          "name": "Quick service",
+          "id": "urn:tag:interests:qloo:quick_service"
+        },
+        {
+          "name": "Seafood",
+          "id": "urn:tag:cuisine:qloo:seafood"
+        },
+        {
+          "name": "Wheelchair accessible seating",
+          "id": "urn:tag:accessibility:place:wheelchair_accessible_seating"
+        },
+        {
+          "name": "Regulars",
+          "id": "urn:tag:customer_identity:qloo:regulars"
+        },
+        {
+          "name": "Wheelchair accessible parking lot",
+          "id": "urn:tag:accessibility:place:wheelchair_accessible_parking_lot"
+        },
+        {
+          "name": "Roadside",
+          "id": "urn:tag:setting:qloo:roadside"
+        }
+      ],
+      "properties": {
+        "description": "Chain eatery known for fried chicken fingers, buffalo wings, sandwiches and American comfort food with dine-in, drive-through and delivery.",
+        "address": "5025 Mud Ln Louisville, KY 40229",
+        "geocode": {
+          "city": "Louisville",
+          "name": null,
+          "metro": null,
+          "country": "United States",
+          "country_code": "US",
+          "admin1_region": "Kentucky",
+          "admin2_region": "Jefferson County"
+        }
+      },
+      "location": {
+        "lat": 38.092470999999996,
+        "lon": -85.6712096,
+        "geohash": "dng0dw80sp6y"
+      }
+    },
+    {
+      "entity_id": "001DE5E4-7BC8-4B14-856D-4806433EFBB0",
+      "name": "Lorenzo’s Corner Pizza & Pub",
+      "subtype": "urn:entity:place",
+      "type": "urn:entity",
+      "tags": [
+        {
+          "name": "Hot turkey and cheese sub",
+          "id": "urn:tag:menu_highlight:qloo:hot_turkey_and_cheese_sub"
+        },
+        {
+          "name": "Place",
+          "id": "urn:tag:genre:place"
+        },
+        {
+          "name": "Checks",
+          "id": "urn:tag:payments:place:checks"
+        },
+        {
+          "name": "Seafood",
+          "id": "urn:tag:cuisine:qloo:seafood"
+        },
+        {
+          "name": "Takeout",
+          "id": "urn:tag:service_options:place:takeout"
+        },
+        {
+          "name": "Arcade games",
+          "id": "urn:tag:offerings:place:arcade_games"
+        },
+        {
+          "name": "Lgbtq+ friendly",
+          "id": "urn:tag:inclusivity:place:lgbtq_friendly"
+        },
+        {
+          "name": "Late night food",
+          "id": "urn:tag:offerings:place:late_night_food"
+        },
+        {
+          "name": "Pub",
+          "id": "urn:tag:category:place:pub"
+        },
+        {
+          "name": "Healthy options",
+          "id": "urn:tag:dietary_option:qloo:healthy_options"
+        },
+        {
+          "name": "Food",
+          "id": "urn:tag:offerings:place:food"
+        },
+        {
+          "name": "Margherita flatbread",
+          "id": "urn:tag:menu_highlight:qloo:margherita_flatbread"
+        },
+        {
+          "name": "Dining drinking",
+          "id": "urn:tag:activity_type:qloo:dining_drinking"
+        },
+        {
+          "name": "Inexpensive",
+          "id": "urn:tag:cost_description:place:inexpensive"
+        },
+        {
+          "name": "Vegan",
+          "id": "urn:tag:dietary_option:qloo:vegan"
+        },
+        {
+          "name": "Dancing",
+          "id": "urn:tag:offerings:place:dancing"
+        },
+        {
+          "name": "Happy hour food",
+          "id": "urn:tag:offerings:place:happy_hour_food"
+        },
+        {
+          "name": "Nightlife",
+          "id": "urn:tag:activity_type:qloo:nightlife"
+        },
+        {
+          "name": "Cash only",
+          "id": "urn:tag:payments:place:cash_only"
+        },
+        {
+          "name": "Locals",
+          "id": "urn:tag:customer_identity:qloo:locals"
+        },
+        {
+          "name": "Roadside",
+          "id": "urn:tag:setting:qloo:roadside"
+        },
+        {
+          "name": "Tourist attraction",
+          "id": "urn:tag:genre:place:tourist_attraction"
+        },
+        {
+          "name": "Comfort food",
+          "id": "urn:tag:interests:qloo:comfort_food"
+        },
+        {
+          "name": "Restroom",
+          "id": "urn:tag:amenities:place:restroom"
+        }
+      ],
+      "properties": {
+        "description": "Casual, inexpensive pizza pub offering halal and vegan options, cocktails, beer, and late-night service with dine-in, takeout, drive-through, and delivery.",
+        "address": "4111 Murphy Ln Louisville, KY 40241",
+        "geocode": {
+          "city": "Louisville",
+          "name": null,
+          "metro": null,
+          "country": "United States",
+          "country_code": "US",
+          "admin1_region": "Kentucky",
+          "admin2_region": "Jefferson County"
+        }
+      },
+      "location": {
+        "lat": 38.3031186,
+        "lon": -85.5323367,
+        "geohash": "dng1vsv7b5j8"
+      }
+    },
+    {
+      "entity_id": "0022AB46-A0C9-4792-A8B7-6683860FBE75",
+      "name": "Fiesta Time Amigos",
+      "subtype": "urn:entity:place",
+      "type": "urn:entity",
+      "tags": [
+        {
+          "name": "Free street parking",
+          "id": "urn:tag:parking:place:free_street_parking"
+        },
+        {
+          "name": "Wi fi",
+          "id": "urn:tag:amenities:place:wi_fi"
+        },
+        {
+          "name": "Staff get temperature checks",
+          "id": "urn:tag:not_for_display:place:staff_get_temperature_checks"
+        },
+        {
+          "name": "Price level",
+          "id": "urn:tag:payments:place:price_level"
+        },
+        {
+          "name": "Order ahead",
+          "id": "urn:tag:dining_options:place:order_ahead"
+        },
+        {
+          "name": "$10 to $20",
+          "id": "urn:tag:cost_description:place:10_to_20"
+        },
+        {
+          "name": "No contact delivery",
+          "id": "urn:tag:service_options:place:no_contact_delivery"
+        },
+        {
+          "name": "Staff wear masks",
+          "id": "urn:tag:not_for_display:place:staff_wear_masks"
+        },
+        {
+          "name": "American express",
+          "id": "urn:tag:credit_card:place:american_express"
+        },
+        {
+          "name": "Beer",
+          "id": "urn:tag:offerings:place:beer"
+        },
+        {
+          "name": "Nfc mobile payments",
+          "id": "urn:tag:payments:place:nfc_mobile_payments"
+        },
+        {
+          "name": "Quick bite",
+          "id": "urn:tag:offerings:place:quick_bite"
+        },
+        {
+          "name": "Kids menu",
+          "id": "urn:tag:children:place:kids_menu"
+        },
+        {
+          "name": "Small plates",
+          "id": "urn:tag:offerings:place:small_plates"
+        },
+        {
+          "name": "Good for kids",
+          "id": "urn:tag:children:place:good_for_kids"
+        },
+        {
+          "name": "Takeout",
+          "id": "urn:tag:service_options:place:takeout"
+        },
+        {
+          "name": "Date night",
+          "id": "urn:tag:event:place:date_night"
+        },
+        {
+          "name": "Comfort food",
+          "id": "urn:tag:offerings:place:comfort_food"
+        },
+        {
+          "name": "Onsite services",
+          "id": "urn:tag:service_options:place:onsite_services"
+        },
+        {
+          "name": "Wheelchair accessible seating",
+          "id": "urn:tag:accessibility:place:wheelchair_accessible_seating"
+        },
+        {
+          "name": "Work dinner",
+          "id": "urn:tag:event:place:work_dinner"
+        },
+        {
+          "name": "Has changing table s",
+          "id": "urn:tag:children:place:has_changing_tables"
+        },
+        {
+          "name": "Hard liquor",
+          "id": "urn:tag:offerings:place:hard_liquor"
+        },
+        {
+          "name": "Delivery",
+          "id": "urn:tag:service_options:place:delivery"
+        }
+      ],
+      "properties": {
+        "description": "Family-owned Mexican restaurant serving authentic Jalisco flavors with large margaritas, affordable plates, catering, and a lively family-friendly atmosphere.",
+        "address": "8123 Bardstown Rd Louisville, KY 40291",
+        "geocode": {
+          "city": "Louisville",
+          "name": null,
+          "metro": null,
+          "country": "United States",
+          "country_code": "US",
+          "admin1_region": "Kentucky",
+          "admin2_region": "Jefferson County"
+        }
+      },
+      "location": {
+        "lat": 38.1294804,
+        "lon": -85.5753482,
+        "geohash": "dng0utmbmfet"
+      }
+    },
+    {
+      "entity_id": "00381147-AE8C-4318-9453-C941225EDCD6",
+      "name": "Outback Steakhouse",
+      "subtype": "urn:entity:place",
+      "type": "urn:entity",
+      "tags": [
+        {
+          "name": "Spirits",
+          "id": "urn:tag:beverage_offering:qloo:spirits"
+        },
+        {
+          "name": "35 44",
+          "id": "urn:tag:age_range:qloo:35_44"
+        },
+        {
+          "name": "Family friendly",
+          "id": "urn:tag:ambience:qloo:family_friendly"
+        },
+        {
+          "name": "Click and collect",
+          "id": "urn:tag:service_type:qloo:click_and_collect"
+        },
+        {
+          "name": "Commercial",
+          "id": "urn:tag:setting:qloo:commercial"
+        },
+        {
+          "name": "Gluten free restaurant",
+          "id": "urn:tag:genre:place:restaurant:gluten_free"
+        },
+        {
+          "name": "Delivery",
+          "id": "urn:tag:service_type:qloo:delivery"
+        },
+        {
+          "name": "Bloomin chicken",
+          "id": "urn:tag:menu_highlight:qloo:bloomin_chicken"
+        },
+        {
+          "name": "Lively",
+          "id": "urn:tag:ambience:qloo:lively"
+        },
+        {
+          "name": "Platypus punch cocktail",
+          "id": "urn:tag:menu_highlight:qloo:platypus_punch_cocktail_"
+        },
+        {
+          "name": "18 24",
+          "id": "urn:tag:age_range:qloo:18_24"
+        },
+        {
+          "name": "Specialty non alcoholic",
+          "id": "urn:tag:beverage_offering:qloo:specialty_non_alcoholic"
+        },
+        {
+          "name": "13 17",
+          "id": "urn:tag:age_range:qloo:13_17"
+        },
+        {
+          "name": "Bar service",
+          "id": "urn:tag:service_type:qloo:bar_service"
+        },
+        {
+          "name": "Place",
+          "id": "urn:tag:genre:place"
+        },
+        {
+          "name": "Seafood",
+          "id": "urn:tag:cuisine:qloo:seafood"
+        },
+        {
+          "name": "American restaurant",
+          "id": "urn:tag:category:place:american_restaurant"
+        },
+        {
+          "name": "Restaurant",
+          "id": "urn:tag:genre:place:restaurant"
+        },
+        {
+          "name": "Online ordering",
+          "id": "urn:tag:service_type:qloo:online_ordering"
+        },
+        {
+          "name": "Pickup",
+          "id": "urn:tag:service_type:qloo:pickup"
+        },
+        {
+          "name": "Locals",
+          "id": "urn:tag:customer_identity:qloo:locals"
+        },
+        {
+          "name": "Walk ins",
+          "id": "urn:tag:service_type:qloo:walk_ins"
+        },
+        {
+          "name": "Allergy friendly",
+          "id": "urn:tag:dietary_option:qloo:allergy_friendly"
+        },
+        {
+          "name": "Rustic",
+          "id": "urn:tag:decor:qloo:rustic"
+        }
+      ],
+      "properties": {
+        "description": "Australian-themed chain serving hearty steaks, seafood and casual steakhouse fare with lively atmosphere and signature Bloomin' Onion.",
+        "address": "8101 Bardstown Rd Louisville, KY 40291",
+        "geocode": {
+          "city": "Louisville",
+          "name": null,
+          "metro": null,
+          "country": "United States",
+          "country_code": "US",
+          "admin1_region": "Kentucky",
+          "admin2_region": "Jefferson County"
+        }
+      },
+      "location": {
+        "lat": 38.1301255,
+        "lon": -85.5761015,
+        "geohash": "dng0utmkh6be"
+      }
+    },
+    {
+      "entity_id": "005ED2C0-7C42-41AC-BD03-2E623A55A2D4",
+      "name": "Which Wich Superior Sandwich- Brownsboro Road",
+      "subtype": "urn:entity:place",
+      "type": "urn:entity",
+      "tags": [
+        {
+          "name": "Caterer",
+          "id": "urn:tag:genre:place:restaurant:caterer"
+        },
+        {
+          "name": "Discover",
+          "id": "urn:tag:credit_card:place:discover"
+        },
+        {
+          "name": "Accessible",
+          "id": "urn:tag:neighborhood_characteristic:qloo:accessible"
+        },
+        {
+          "name": "Halal",
+          "id": "urn:tag:dietary_option:qloo:halal"
+        },
+        {
+          "name": "Takeout restaurant",
+          "id": "urn:tag:genre:place:restaurant:takeout"
+        },
+        {
+          "name": "American express",
+          "id": "urn:tag:credit_card:place:american_express"
+        },
+        {
+          "name": "Casual dining",
+          "id": "urn:tag:interests:qloo:casual_dining"
+        },
+        {
+          "name": "Sandwiches",
+          "id": "urn:tag:cuisine:qloo:sandwiches"
+        },
+        {
+          "name": "Food customization",
+          "id": "urn:tag:interests:qloo:food_customization"
+        },
+        {
+          "name": "Casual",
+          "id": "urn:tag:culinary_style:qloo:casual"
+        },
+        {
+          "name": "Healthy options",
+          "id": "urn:tag:dietary_option:qloo:healthy_options"
+        },
+        {
+          "name": "Dine in",
+          "id": "urn:tag:service_options:place:dine_in"
+        },
+        {
+          "name": "Credit cards",
+          "id": "urn:tag:payments:place:credit_cards"
+        },
+        {
+          "name": "Soft drinks",
+          "id": "urn:tag:beverage_offering:qloo:soft_drinks"
+        },
+        {
+          "name": "Clean",
+          "id": "urn:tag:ambience:qloo:clean"
+        },
+        {
+          "name": "Meatball sub",
+          "id": "urn:tag:menu_highlight:qloo:meatball_sub"
+        },
+        {
+          "name": "Moderate",
+          "id": "urn:tag:noise_level:qloo:moderate"
+        },
+        {
+          "name": "Visa",
+          "id": "urn:tag:credit_card:place:visa"
+        },
+        {
+          "name": "All you can eat",
+          "id": "urn:tag:offerings:place:all_you_can_eat"
+        },
+        {
+          "name": "Free street parking",
+          "id": "urn:tag:parking:place:free_street_parking"
+        },
+        {
+          "name": "Catering food and drink supplier",
+          "id": "urn:tag:category:place:catering_food_and_drink_supplier"
+        },
+        {
+          "name": "American",
+          "id": "urn:tag:cuisine:qloo:american"
+        },
+        {
+          "name": "Restaurant",
+          "id": "urn:tag:genre:place:restaurant"
+        },
+        {
+          "name": "Quick bite",
+          "id": "urn:tag:offerings:place:quick_bite"
+        }
+      ],
+      "properties": {
+        "description": "Casual sandwich shop offering build-your-own sandwiches with varied breads, quick inexpensive service, and vegetarian and halal options.",
+        "address": "9850 Von Allmen Ct #103 Louisville, KY 40241",
+        "geocode": {
+          "city": "Louisville",
+          "name": null,
+          "metro": null,
+          "country": "United States",
+          "country_code": "US",
+          "admin1_region": "Kentucky",
+          "admin2_region": "Jefferson County"
+        }
+      },
+      "location": {
+        "lat": 38.312478,
+        "lon": -85.56913,
+        "geohash": "dng1uyd6qg2h"
+      }
+    },
+    {
+      "entity_id": "0060D5D8-7A29-41CE-AACD-3ADAB7A574A2",
+      "name": "Carrie Gaulbert Cox Park",
+      "subtype": "urn:entity:place",
+      "type": "urn:entity",
+      "tags": [
+        {
+          "name": "Tourist attraction",
+          "id": "urn:tag:genre:place:tourist_attraction"
+        },
+        {
+          "name": "Wheelchair accessible entrance",
+          "id": "urn:tag:accessibility:place:wheelchair_accessible_entrance"
+        },
+        {
+          "name": "Public restroom",
+          "id": "urn:tag:amenities:place:public_restroom"
+        },
+        {
+          "name": "Volleyball court",
+          "id": "urn:tag:amenities:place:volleyball_court"
+        },
+        {
+          "name": "Park",
+          "id": "urn:tag:genre:place:park"
+        },
+        {
+          "name": "Walking",
+          "id": "urn:tag:activities:place:walking"
+        },
+        {
+          "name": "Picnic tables",
+          "id": "urn:tag:amenities:place:picnic_tables"
+        },
+        {
+          "name": "Slides",
+          "id": "urn:tag:amenities:place:slides"
+        },
+        {
+          "name": "Good for kids",
+          "id": "urn:tag:children:place:good_for_kids"
+        },
+        {
+          "name": "Playground",
+          "id": "urn:tag:children:place:playground"
+        },
+        {
+          "name": "Swings",
+          "id": "urn:tag:amenities:place:swings"
+        },
+        {
+          "name": "Has a tennis court",
+          "id": "urn:tag:amenities:place:has_a_tennis_court"
+        },
+        {
+          "name": "Kid friendly hikes",
+          "id": "urn:tag:children:place:kid_friendly_hikes"
+        },
+        {
+          "name": "Hiking",
+          "id": "urn:tag:activities:place:hiking"
+        },
+        {
+          "name": "Wheelchair accessible parking lot",
+          "id": "urn:tag:accessibility:place:wheelchair_accessible_parking_lot"
+        },
+        {
+          "name": "Allows fishing",
+          "id": "urn:tag:activities:place:allows_fishing"
+        },
+        {
+          "name": "Volunteer program",
+          "id": "urn:tag:offerings:place:volunteer_program"
+        },
+        {
+          "name": "Skateboarding area",
+          "id": "urn:tag:amenities:place:skateboarding_area"
+        },
+        {
+          "name": "Free parking lot",
+          "id": "urn:tag:parking:place:free_parking_lot"
+        },
+        {
+          "name": "Park",
+          "id": "urn:tag:category:place:park"
+        },
+        {
+          "name": "Dogs allowed",
+          "id": "urn:tag:pets:place:dogs_allowed"
+        },
+        {
+          "name": "Good for kids birthday",
+          "id": "urn:tag:children:place:good_for_kids_birthday"
+        },
+        {
+          "name": "Baseball field",
+          "id": "urn:tag:amenities:place:baseball_field"
+        },
+        {
+          "name": "Barbecue grill",
+          "id": "urn:tag:amenities:place:barbecue_grill"
+        }
+      ],
+      "properties": {
+        "description": "Small riverfront park offering scenic Ohio River views, lawns, benches, and access to riverfront trails.",
+        "address": "3730 River Rd Louisville, KY 40207",
+        "geocode": {
+          "city": "Louisville",
+          "name": null,
+          "metro": null,
+          "country": "United States",
+          "country_code": "US",
+          "admin1_region": "Kentucky",
+          "admin2_region": "Jefferson County"
+        }
+      },
+      "location": {
+        "lat": 38.2846532,
+        "lon": -85.6912244,
+        "geohash": "dng1f1983b8c"
+      }
+    }
+  ],
+  "requestsUsed": 3
+}

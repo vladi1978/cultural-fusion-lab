@@ -11,6 +11,7 @@ import type {
   QualityGateReport,
 } from "../types";
 import { hasRepeatedWords, isGenericSuffixChain } from "./naming";
+import { assessBriefFidelity } from "./brief-fidelity";
 import type { InterpretedObjective } from "./types";
 
 const FLUFF =
@@ -52,6 +53,11 @@ export function runQualityGates(options: {
       ? "Objective and output category frozen."
       : "Objective or output category drifted from user request.",
   );
+
+  // P10.20: explicit brief requirements must appear in generated operations,
+  // not merely in the frozen original request or cultural-interest label.
+  const fidelity = assessBriefFidelity(interpreted.rawObjective, spec);
+  push("brief_operational_fidelity", fidelity.ok, fidelity.detail);
 
   // Journey
   push(
@@ -360,7 +366,7 @@ export function runQualityGates(options: {
     pilotOk,
     pilotOk
       ? "Pilot experiment is concrete and measurable."
-      : "Pilot experiment missing operational measurement language.",
+      : "Pilot experiment missing operational measurement language (needs at least 40 characters and a plain measurement term such as measure, count, observe, survey, session, week, guest, host, user or customer).",
   );
 
   // Mechanical differentiation vs already accepted
@@ -417,6 +423,32 @@ export function checkOutputCategoryCoherence(
   ].join(" ");
 
   if (output === "product") {
+    // P9.99: A commercial redemption flow is not a functional home product.
+    const homeIntent =
+      /\b(home|household|furniture|interior|homeware)\b/i.test(
+        spec.frozenObjective,
+      );
+
+    if (homeIntent) {
+      const hasHomeObject =
+        /\b(lamp|lighting fixture|shelf|shelving|table|chair|stool|cabinet|storage unit|vase|planter|tray|room divider|wall panel|rug|cushion|ceramic vessel|coffee brewing kit)\b/i.test(
+          spec.proposition,
+        );
+
+      const hasPhysicalFunction =
+        /\b(illuminate|light|hold|store|organize|support|seat|display|divide|shade|contain|protect|absorb|cover|filter|hang|mount|adjust)\b/i.test(
+          `${spec.proposition} ${spec.mechanics}`,
+        );
+
+      if (!hasHomeObject || !hasPhysicalFunction) {
+        return {
+          ok: false,
+          detail:
+            "Home-product intent requires an identifiable physical home object and a physical use function; SKU redemption or distribution alone is insufficient.",
+        };
+      }
+    }
+
     const hasForm =
       /\b(product|kit|object|device|apparel|garment|tool|pack|edition|module|wearable|hardware|sku|goods|item|deck|card)\b/i.test(
         blob,

@@ -56,6 +56,8 @@ export interface QlooEntity {
   affinity?: number;
   query?: { affinity?: number };
   tags?: QlooTagRef[];
+  /** Coordinates Qloo returns for places. */
+  location?: { lat?: number; lon?: number };
 }
 
 export interface QlooTag {
@@ -168,6 +170,12 @@ export function parseQlooEntity(value: unknown): QlooEntity | null {
       ? { affinity: asNumber(queryRec.affinity) }
       : undefined,
     tags: tags.length ? tags : undefined,
+    location: (() => {
+      const loc = asRecord(rec.location);
+      if (!loc) return undefined;
+      const lat = asNumber(loc.lat), lon = asNumber(loc.lon);
+      return lat !== undefined && lon !== undefined ? { lat, lon } : undefined;
+    })(),
   };
 }
 

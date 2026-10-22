@@ -1,0 +1,1047 @@
+{
+ "recordedAt": "2026-10-21T23:33:56.622Z",
+ "note": "Real Qloo hackathon API responses recorded 2026-10-21 (documented /v2/tags and /v2/insights with tag signals), trimmed to 3-5 entries each.",
+ "tagsCycling": {
+  "success": true,
+  "results": {
+   "tags": [
+    {
+     "parents": [
+      {
+       "type": "urn:entity:book"
+      },
+      {
+       "type": "urn:entity:author"
+      }
+     ],
+     "type": "urn:tag:genre:media",
+     "id": "urn:tag:genre:media:cycling",
+     "name": "Cycling",
+     "popularity": 0.99767417,
+     "properties": {},
+     "tags": []
+    },
+    {
+     "parents": [
+      {
+       "type": "urn:entity:tv_show"
+      },
+      {
+       "type": "urn:entity:podcast"
+      },
+      {
+       "type": "urn:entity:movie"
+      }
+     ],
+     "type": "urn:tag:keyword:qloo",
+     "id": "urn:tag:keyword:qloo:cycling",
+     "name": "Cycling",
+     "popularity": 0.80771744,
+     "properties": {},
+     "tags": []
+    },
+    {
+     "parents": [
+      {
+       "type": "urn:entity:tv_show"
+      },
+      {
+       "type": "urn:entity:podcast"
+      },
+      {
+       "type": "urn:entity:movie"
+      }
+     ],
+     "type": "urn:tag:subgenre:qloo",
+     "id": "urn:tag:subgenre:qloo:cycling",
+     "name": "Cycling",
+     "popularity": 0.6512934,
+     "properties": {},
+     "tags": []
+    },
+    {
+     "parents": [
+      {
+       "type": "urn:entity:place"
+      }
+     ],
+     "type": "urn:tag:amenity:place",
+     "id": "urn:tag:amenity:place:cycling_lanes",
+     "name": "Cycling lanes",
+     "popularity": 0.9982939,
+     "properties": {},
+     "tags": []
+    },
+    {
+     "parents": [
+      {
+       "type": "urn:entity:place"
+      }
+     ],
+     "type": "urn:tag:category:place",
+     "id": "urn:tag:category:place:cycling_park",
+     "name": "Cycling park",
+     "popularity": 0.99785787,
+     "properties": {},
+     "tags": []
+    }
+   ]
+  }
+ },
+ "tagsLateNight": {
+  "success": true,
+  "results": {
+   "tags": [
+    {
+     "parents": [
+      {
+       "type": "urn:entity:place"
+      }
+     ],
+     "type": "urn:tag:specialty_dish:place",
+     "id": "urn:tag:specialty_dish:place:late_night",
+     "name": "Late Night",
+     "popularity": 0.97681016,
+     "properties": {},
+     "tags": []
+    },
+    {
+     "parents": [
+      {
+       "type": "urn:entity:place"
+      }
+     ],
+     "type": "urn:tag:good_for:qloo",
+     "id": "urn:tag:good_for:qloo:late_night",
+     "name": "Late Night",
+     "popularity": 0.9494127,
+     "properties": {},
+     "tags": []
+    },
+    {
+     "parents": [
+      {
+       "type": "urn:entity:place"
+      }
+     ],
+     "type": "urn:tag:offerings:place",
+     "id": "urn:tag:offerings:place:late_night_food",
+     "name": "Late-night food",
+     "popularity": 0.99996847,
+     "properties": {},
+     "tags": []
+    },
+    {
+     "parents": [
+      {
+       "type": "urn:entity:place"
+      }
+     ],
+     "type": "urn:tag:genre:place",
+     "id": "urn:tag:genre:place:restaurant:late_night_meal",
+     "name": "Late night meal restaurant",
+     "popularity": 0.9938103,
+     "properties": {
+      "description": "Late Night Dining is a food and restaurant genre that caters to patrons during late-night hours, usually after traditional dining hours. The range of food depends on the establishment, but often includes comfort foods, fast foods, and simple meals.",
+      "history": "The concept of Late Night Dining is as old as the establishment of eateries and restaurants. It evolved with the needs and lifestyle of people, usually serving those who work late hours, nightlife enthusiasts, and night owls.",
+      "origin": "Global",
+      "presentation_style": "Casual"
+     },
+     "tags": []
+    },
+    {
+     "parents": [
+      {
+       "type": "urn:entity:place"
+      }
+     ],
+     "type": "urn:tag:category:place",
+     "id": "urn:tag:category:place:late_night_meal_restaurant",
+     "name": "Late night meal restaurant",
+     "popularity": 0.9938103,
+     "properties": {},
+     "tags": []
+    }
+   ]
+  }
+ },
+ "tagsCommunity": {
+  "success": true,
+  "results": {
+   "tags": [
+    {
+     "parents": [
+      {
+       "type": "urn:entity:tv_show"
+      },
+      {
+       "type": "urn:entity:podcast"
+      },
+      {
+       "type": "urn:entity:movie"
+      }
+     ],
+     "type": "urn:tag:keyword:qloo",
+     "id": "urn:tag:keyword:qloo:community",
+     "name": "Community",
+     "popularity": 0.98730296,
+     "properties": {},
+     "tags": []
+    },
+    {
+     "parents": [
+      {
+       "type": "urn:entity:artist"
+      },
+      {
+       "type": "urn:entity:podcast"
+      }
+     ],
+     "type": "urn:tag:theme:qloo",
+     "id": "urn:tag:theme:qloo:community",
+     "name": "Community",
+     "popularity": 0.97453827,
+     "properties": {},
+     "tags": []
+    },
+    {
+     "parents": [
+      {
+       "type": "urn:entity:place"
+      }
+     ],
+     "type": "urn:tag:neighborhood_characteristics:qloo",
+     "id": "urn:tag:neighborhood_characteristics:qloo:community",
+     "name": "Community",
+     "popularity": 0.95467633,
+     "properties": {},
+     "tags": []
+    },
+    {
+     "parents": [
+      {
+       "type": "urn:entity:tv_show"
+      },
+      {
+       "type": "urn:entity:podcast"
+      },
+      {
+       "type": "urn:entity:movie"
+      }
+     ],
+     "type": "urn:tag:archetype:qloo",
+     "id": "urn:tag:archetype:qloo:community",
+     "name": "Community",
+     "popularity": 0.9297941,
+     "properties": {},
+     "tags": []
+    },
+    {
+     "parents": [
+      {
+       "type": "urn:entity:artist"
+      },
+      {
+       "type": "urn:entity:album"
+      }
+     ],
+     "type": "urn:tag:genre:music",
+     "id": "urn:tag:genre:music:community",
+     "name": "Community",
+     "popularity": 0.9053255,
+     "properties": {},
+     "tags": []
+    }
+   ]
+  }
+ },
+ "insightsPlaceByMediaTag": {
+  "success": true,
+  "results": {
+   "entities": [
+    {
+     "entity_id": "1E20A3BE-4EDE-44E3-B7CE-24BBC3C85CAD",
+     "name": "Cherokee Park",
+     "type": "urn:entity",
+     "subtype": "urn:entity:place",
+     "popularity": 0.9976648350117622,
+     "properties": {
+      "address": "745 Cochran Hill Rd Louisville, KY 40206",
+      "geocode": {
+       "city": "Louisville",
+       "name": null,
+       "metro": null,
+       "country": "United States",
+       "country_code": "US",
+       "admin1_region": "Kentucky",
+       "admin2_region": "Jefferson County"
+      },
+      "description": "Large 389-acre urban park with rolling hills, a 2.4-mile scenic loop, picnic areas, trails, and off-leash dog-friendly spaces.",
+      "short_description": "Large 389-acre urban park with rolling hills, a 2.4-mile scenic loop, picnic areas, trails, and off-leash dog-friendly spaces.",
+      "keywords": [
+       {
+        "name": "trails",
+        "count": 354
+       },
+       {
+        "name": "archery range",
+        "count": 12
+       },
+       {
+        "name": "paved paths",
+        "count": 29
+       },
+       {
+        "name": "Children\u2019s Playground",
+        "count": 29
+       },
+       {
+        "name": "hills",
+        "count": 32
+       },
+       {
+        "name": "deer",
+        "count": 23
+       },
+       {
+        "name": "creek",
+        "count": 11
+       },
+       {
+        "name": "walking trails",
+        "count": 29
+       },
+       {
+        "name": "mountain biking",
+        "count": 17
+       },
+       {
+        "name": "bike paths",
+        "count": 12
+       }
+      ]
+     },
+     "query": {
+      "affinity": 0.8754469181078175
+     },
+     "tags": [
+      {
+       "id": "urn:tag:interests:qloo:wildlife_observation",
+       "name": "Wildlife observation",
+       "type": "urn:tag:interests:qloo"
+      },
+      {
+       "id": "urn:tag:activity_type:qloo:archery",
+       "name": "Archery",
+       "type": "urn:tag:activity_type:qloo"
+      },
+      {
+       "id": "urn:tag:activity_type:qloo:nature_outdoors",
+       "name": "Nature outdoors",
+       "type": "urn:tag:activity_type:qloo"
+      },
+      {
+       "id": "urn:tag:activity_type:qloo:outdoor_adventure",
+       "name": "Outdoor adventure",
+       "type": "urn:tag:activity_type:qloo"
+      },
+      {
+       "id": "urn:tag:decor:qloo:traditional",
+       "name": "Traditional",
+       "type": "urn:tag:decor:qloo"
+      },
+      {
+       "id": "urn:tag:neighborhood_characteristic:qloo:walkable",
+       "name": "Walkable",
+       "type": "urn:tag:neighborhood_characteristic:qloo"
+      }
+     ],
+     "location": {
+      "lat": 38.2399656,
+      "lon": -85.6993663
+     }
+    },
+    {
+     "entity_id": "000C0BDA-9258-4B0E-8353-E55A9D845C07",
+     "name": "Sandy's Pet Shop",
+     "type": "urn:entity",
+     "subtype": "urn:entity:place",
+     "popularity": 0.9316221791084361,
+     "properties": {
+      "address": "1421 Hess Ln Louisville, KY 40217",
+      "geocode": {
+       "city": "Louisville",
+       "name": null,
+       "metro": null,
+       "country": "United States",
+       "country_code": "US",
+       "admin1_region": "Kentucky",
+       "admin2_region": "Jefferson County"
+      },
+      "description": "Family-owned pet supply store known for an extensive aquarium collection, knowledgeable staff, and a wide selection of reptiles and small pets.",
+      "short_description": "Family-owned pet supply store known for an extensive aquarium collection, knowledgeable staff, and a wide selection of reptiles and small pets.",
+      "keywords": [
+       {
+        "name": "saltwater fish",
+        "count": 66
+       },
+       {
+        "name": "knowledgeable staff",
+        "count": 398
+       },
+       {
+        "name": "ferrets",
+        "count": 41
+       },
+       {
+        "name": "coral selection",
+        "count": 31
+       },
+       {
+        "name": "aquatic plants",
+        "count": 23
+       },
+       {
+        "name": "aquarium supplies",
+        "count": 28
+       },
+       {
+        "name": "freshwater selection",
+        "count": 34
+       },
+       {
+        "name": "bunnies",
+        "count": 14
+       },
+       {
+        "name": "salt water tanks",
+        "count": 8
+       },
+       {
+        "name": "healthy fish",
+        "count": 13
+       }
+      ]
+     },
+     "query": {
+      "affinity": 0.7649962877984056
+     },
+     "tags": [
+      {
+       "id": "urn:tag:parking:place:free_parking_lot",
+       "name": "Free parking lot",
+       "type": "urn:tag:parking:place"
+      },
+      {
+       "id": "urn:tag:category:place:pet_supply_store",
+       "name": "Pet supply store",
+       "type": "urn:tag:category:place"
+      },
+      {
+       "id": "urn:tag:accessibility:place:wheelchair_accessible_parking_lot",
+       "name": "Wheelchair accessible parking lot",
+       "type": "urn:tag:accessibility:place"
+      },
+      {
+       "id": "urn:tag:genre:place:shopping",
+       "name": "Shopping",
+       "type": "urn:tag:genre:place"
+      },
+      {
+       "id": "urn:tag:service_options:place:in_store_pickup",
+       "name": "In store pickup",
+       "type": "urn:tag:service_options:place"
+      },
+      {
+       "id": "urn:tag:planning:place:quick_visit",
+       "name": "Quick visit",
+       "type": "urn:tag:planning:place"
+      }
+     ],
+     "location": {
+      "lat": 38.2118111,
+      "lon": -85.7217632
+     }
+    },
+    {
+     "entity_id": "001CC979-932C-4F60-A11C-394F4CCFE00D",
+     "name": "Zaxbys Chicken Fingers & Buffalo Wings",
+     "type": "urn:entity",
+     "subtype": "urn:entity:place",
+     "popularity": 0.7363312149135564,
+     "properties": {
+      "address": "5025 Mud Ln Louisville, KY 40229",
+      "geocode": {
+       "city": "Louisville",
+       "name": null,
+       "metro": null,
+       "country": "United States",
+       "country_code": "US",
+       "admin1_region": "Kentucky",
+       "admin2_region": "Jefferson County"
+      },
+      "description": "Chain eatery known for fried chicken fingers, buffalo wings, sandwiches and American comfort food with dine-in, drive-through and delivery.",
+      "short_description": "Chain eatery known for fried chicken fingers, buffalo wings, sandwiches and American comfort food with dine-in, drive-through and delivery.",
+      "keywords": [
+       {
+        "name": "chicken fingers",
+        "count": 12
+       },
+       {
+        "name": "drive thru",
+        "count": 43
+       },
+       {
+        "name": "cobb salad",
+        "count": 10
+       },
+       {
+        "name": "boneless wings",
+        "count": 3
+       },
+       {
+        "name": "salads",
+        "count": 18
+       },
+       {
+        "name": "welcoming staff",
+        "count": 8
+       },
+       {
+        "name": "fried mushrooms",
+        "count": 2
+       },
+       {
+        "name": "eggroll",
+        "count": 2
+       },
+       {
+        "name": "fries",
+        "count": 18
+       },
+       {
+        "name": "oriental salad",
+        "count": 2
+       }
+      ]
+     },
+     "query": {
+      "affinity": 0.7649962877984056
+     },
+     "tags": [
+      {
+       "id": "urn:tag:genre:place:restaurant:fast_food",
+       "name": "Fast food",
+       "type": "urn:tag:genre:place"
+      },
+      {
+       "id": "urn:tag:time_of_day_fit:qloo:afternoon",
+       "name": "Afternoon",
+       "type": "urn:tag:time_of_day_fit:qloo"
+      },
+      {
+       "id": "urn:tag:time_of_day_fit:qloo:midday",
+       "name": "Midday",
+       "type": "urn:tag:time_of_day_fit:qloo"
+      },
+      {
+       "id": "urn:tag:menu_highlight:qloo:crinkle_cut_fries",
+       "name": "Crinkle cut fries",
+       "type": "urn:tag:menu_highlight:qloo"
+      },
+      {
+       "id": "urn:tag:cuisine:qloo:american",
+       "name": "American",
+       "type": "urn:tag:cuisine:qloo"
+      },
+      {
+       "id": "urn:tag:time_of_day_fit:qloo:evening",
+       "name": "Evening",
+       "type": "urn:tag:time_of_day_fit:qloo"
+      }
+     ],
+     "location": {
+      "lat": 38.092470999999996,
+      "lon": -85.6712096
+     }
+    },
+    {
+     "entity_id": "001DE5E4-7BC8-4B14-856D-4806433EFBB0",
+     "name": "Lorenzo\u2019s Corner Pizza & Pub",
+     "type": "urn:entity",
+     "subtype": "urn:entity:place",
+     "popularity": 0,
+     "properties": {
+      "address": "4111 Murphy Ln Louisville, KY 40241",
+      "geocode": {
+       "city": "Louisville",
+       "name": null,
+       "metro": null,
+       "country": "United States",
+       "country_code": "US",
+       "admin1_region": "Kentucky",
+       "admin2_region": "Jefferson County"
+      },
+      "description": "Casual, inexpensive pizza pub offering halal and vegan options, cocktails, beer, and late-night service with dine-in, takeout, drive-through, and delivery.",
+      "short_description": "Casual, inexpensive pizza pub offering halal and vegan options, cocktails, beer, and late-night service with dine-in, takeout, drive-through, and delivery.",
+      "keywords": [
+       {
+        "name": "flatbread pizzas",
+        "count": 5
+       },
+       {
+        "name": "meatball sub",
+        "count": 2
+       },
+       {
+        "name": "meat lovers pizza",
+        "count": 3
+       },
+       {
+        "name": "live band",
+        "count": 3
+       },
+       {
+        "name": "late night kitchen",
+        "count": 3
+       },
+       {
+        "name": "karaoke",
+        "count": 5
+       },
+       {
+        "name": "pizza roll",
+        "count": 2
+       },
+       {
+        "name": "neighborhood pub",
+        "count": 3
+       },
+       {
+        "name": "cordial staff",
+        "count": 4
+       },
+       {
+        "name": "beer selection",
+        "count": 5
+       }
+      ]
+     },
+     "query": {
+      "affinity": 0.7649962877984056
+     },
+     "tags": [
+      {
+       "id": "urn:tag:menu_highlight:qloo:hot_turkey_and_cheese_sub",
+       "name": "Hot turkey and cheese sub",
+       "type": "urn:tag:menu_highlight:qloo"
+      },
+      {
+       "id": "urn:tag:genre:place",
+       "name": "Place",
+       "type": "urn:tag:genre:place"
+      },
+      {
+       "id": "urn:tag:payments:place:checks",
+       "name": "Checks",
+       "type": "urn:tag:payments:place"
+      },
+      {
+       "id": "urn:tag:cuisine:qloo:seafood",
+       "name": "Seafood",
+       "type": "urn:tag:cuisine:qloo"
+      },
+      {
+       "id": "urn:tag:service_options:place:takeout",
+       "name": "Takeout",
+       "type": "urn:tag:service_options:place"
+      },
+      {
+       "id": "urn:tag:offerings:place:arcade_games",
+       "name": "Arcade games",
+       "type": "urn:tag:offerings:place"
+      }
+     ],
+     "location": {
+      "lat": 38.3031186,
+      "lon": -85.5323367
+     }
+    },
+    {
+     "entity_id": "0022AB46-A0C9-4792-A8B7-6683860FBE75",
+     "name": "Fiesta Time Amigos",
+     "type": "urn:entity",
+     "subtype": "urn:entity:place",
+     "popularity": 0.755891773748459,
+     "properties": {
+      "address": "8123 Bardstown Rd Louisville, KY 40291",
+      "geocode": {
+       "city": "Louisville",
+       "name": null,
+       "metro": null,
+       "country": "United States",
+       "country_code": "US",
+       "admin1_region": "Kentucky",
+       "admin2_region": "Jefferson County"
+      },
+      "description": "Family-owned Mexican restaurant serving authentic Jalisco flavors with large margaritas, affordable plates, catering, and a lively family-friendly atmosphere.",
+      "short_description": "Family-owned Mexican restaurant serving authentic Jalisco flavors with large margaritas, affordable plates, catering, and a lively family-friendly atmosphere.",
+      "keywords": [
+       {
+        "name": "margaritas",
+        "count": 48
+       },
+       {
+        "name": "steak fajita quesadilla",
+        "count": 2
+       },
+       {
+        "name": "outdoor seating",
+        "count": 3
+       },
+       {
+        "name": "fajitas",
+        "count": 20
+       },
+       {
+        "name": "chimichanga",
+        "count": 2
+       },
+       {
+        "name": "fish tacos",
+        "count": 4
+       },
+       {
+        "name": "curbside",
+        "count": 2
+       },
+       {
+        "name": "cheese dip",
+        "count": 4
+       },
+       {
+        "name": "courteous staff",
+        "count": 2
+       },
+       {
+        "name": "refried beans",
+        "count": 2
+       }
+      ]
+     },
+     "query": {
+      "affinity": 0.7649962877984056
+     },
+     "tags": [
+      {
+       "id": "urn:tag:parking:place:free_street_parking",
+       "name": "Free street parking",
+       "type": "urn:tag:parking:place"
+      },
+      {
+       "id": "urn:tag:amenities:place:wi_fi",
+       "name": "Wi fi",
+       "type": "urn:tag:amenities:place"
+      },
+      {
+       "id": "urn:tag:not_for_display:place:staff_get_temperature_checks",
+       "name": "Staff get temperature checks",
+       "type": "urn:tag:not_for_display:place"
+      },
+      {
+       "id": "urn:tag:payments:place:price_level",
+       "name": "Price level",
+       "type": "urn:tag:payments:place"
+      },
+      {
+       "id": "urn:tag:dining_options:place:order_ahead",
+       "name": "Order ahead",
+       "type": "urn:tag:dining_options:place"
+      },
+      {
+       "id": "urn:tag:cost_description:place:10_to_20",
+       "name": "$10 to $20",
+       "type": "urn:tag:cost_description:place"
+      }
+     ],
+     "location": {
+      "lat": 38.1294804,
+      "lon": -85.5753482
+     }
+    }
+   ]
+  }
+ },
+ "insightsBrandByMediaTag": {
+  "success": true,
+  "results": {
+   "entities": [
+    {
+     "entity_id": "93B67906-5601-4A1F-B99C-A2FC0D3971DD",
+     "name": "KASK Sport",
+     "type": "urn:entity",
+     "subtype": "urn:entity:brand",
+     "popularity": 0.8252953840416335,
+     "properties": {
+      "description": "KASK Sport is a prominent Italian brand dedicated to the design and manufacture of high-quality protective helmets for cycling, skiing, and equestrian sports. Founded in 2004, the brand has established a reputation for its commitment to technical safety, often exceeding international standards through rigorous internal research and testing. It caters to both professional athletes and serious enthusiasts, offering products that blend performance-oriented engineering with distinctively Italian aesthetics. With a global presence, the company continues to focus on innovation and the creation of advanced protective gear for high-intensity athletic environments.",
+      "short_description": "KASK Sport is an Italian company specializing in high-quality helmets for cycling, skiing, and riding, combining safety, comfort, and style.",
+      "keywords": [
+       "Safety Standards",
+       "Rotational Impact Protection",
+       "Helmet Technology",
+       "Italian Design",
+       "Sport Protection"
+      ]
+     },
+     "query": {
+      "affinity": 0.9993704076046876
+     },
+     "tags": [
+      {
+       "id": "urn:tag:genre:brand:fashion",
+       "name": "Fashion",
+       "type": "urn:tag:genre:brand"
+      },
+      {
+       "id": "urn:tag:aesthetic_property:qloo:aerodynamic_shapes",
+       "name": "Aerodynamic Shapes",
+       "type": "urn:tag:aesthetic_property:qloo"
+      },
+      {
+       "id": "urn:tag:aesthetic_property:qloo:sleek_profiles",
+       "name": "Sleek Profiles",
+       "type": "urn:tag:aesthetic_property:qloo"
+      },
+      {
+       "id": "urn:tag:aesthetic_property:qloo:technical_finishes",
+       "name": "Technical Finishes",
+       "type": "urn:tag:aesthetic_property:qloo"
+      },
+      {
+       "id": "urn:tag:aesthetic_property:qloo:modern_minimalism",
+       "name": "Modern Minimalism",
+       "type": "urn:tag:aesthetic_property:qloo"
+      },
+      {
+       "id": "urn:tag:aesthetic_property:qloo:high_visibility_details",
+       "name": "High-Visibility Details",
+       "type": "urn:tag:aesthetic_property:qloo"
+      }
+     ]
+    },
+    {
+     "entity_id": "AB038DA4-86FB-4AA5-A151-4B4671086E62",
+     "name": "Katusha Sports",
+     "type": "urn:entity",
+     "subtype": "urn:entity:brand",
+     "popularity": 0.547083453408147,
+     "properties": {
+      "description": "Katusha Sports is a high-performance cycling apparel brand that draws on Swiss innovation to create technical gear for professional and amateur riders. The brand emphasizes precision, comfort, and advanced materials to support athletes during intensive training and competition. By manufacturing in Europe, it ensures rigorous quality control for its range of jerseys, bibs, and accessories. It is positioned as a premium choice for cyclists who value both function and modern design in their performance equipment.",
+      "short_description": "Katusha Sports is a Swiss innovated cycling apparel brand offering high-quality technical clothing and accessories for professional and amateur riders worldwide.",
+      "keywords": [
+       "Cycling Apparel",
+       "Performance Wear",
+       "Technical Fabric",
+       "Road Cycling",
+       "Swiss Engineering"
+      ]
+     },
+     "query": {
+      "affinity": 0.9990236594739348
+     },
+     "tags": [
+      {
+       "id": "urn:tag:genre:brand:fashion",
+       "name": "Fashion",
+       "type": "urn:tag:genre:brand"
+      },
+      {
+       "id": "urn:tag:genre:brand:fashion:athletic",
+       "name": "Athletic",
+       "type": "urn:tag:genre:brand"
+      },
+      {
+       "id": "urn:tag:aesthetic_property:qloo:minimalist",
+       "name": "Minimalist",
+       "type": "urn:tag:aesthetic_property:qloo"
+      },
+      {
+       "id": "urn:tag:aesthetic_property:qloo:streamlined",
+       "name": "Streamlined",
+       "type": "urn:tag:aesthetic_property:qloo"
+      },
+      {
+       "id": "urn:tag:aesthetic_property:qloo:ergonomic",
+       "name": "Ergonomic",
+       "type": "urn:tag:aesthetic_property:qloo"
+      },
+      {
+       "id": "urn:tag:aesthetic_property:qloo:technical_fabric_texture",
+       "name": "Technical Fabric Texture",
+       "type": "urn:tag:aesthetic_property:qloo"
+      }
+     ]
+    },
+    {
+     "entity_id": "52712D8D-D181-4671-80B2-46603FD7B2FB",
+     "name": "Oakley",
+     "type": "urn:entity",
+     "subtype": "urn:entity:brand",
+     "popularity": 0.9917953586140259,
+     "properties": {
+      "description": "Established in 1975, the brand has become a global leader in high-performance sports eyewear, synonymous with cutting-edge lens technology and durable, industrial design. It serves a diverse audience of professional athletes, sports enthusiasts, and individuals seeking high-quality protective gear for demanding environments. Now part of a global optical conglomerate, the brand maintains its focus on technical innovation, creating products that define the intersection of sport and lifestyle. Its signature style is characterized by bold, aerodynamic shapes and a commitment to optical clarity that has made it a fixture in professional arenas worldwide.",
+      "short_description": "Oakley is a brand specializing in sunglasses, goggles, apparel, and accessories, known for advanced lens technologies like Prizm and Polarized lenses.",
+      "keywords": [
+       "Prizm Lens",
+       "Performance Optics",
+       "Wrap Frames",
+       "Technical Gear",
+       "Sport Innovation"
+      ]
+     },
+     "query": {
+      "affinity": 0.9979408869684071
+     },
+     "tags": [
+      {
+       "id": "urn:tag:genre:brand:fashion",
+       "name": "Fashion",
+       "type": "urn:tag:genre:brand"
+      },
+      {
+       "id": "urn:tag:genre:brand:fashion:accessories:eyewear",
+       "name": "Eyewear",
+       "type": "urn:tag:genre:brand"
+      },
+      {
+       "id": "urn:tag:genre:brand:fashion:accessories",
+       "name": "Accessories",
+       "type": "urn:tag:genre:brand"
+      },
+      {
+       "id": "urn:tag:aesthetic_property:qloo:futuristic",
+       "name": "Futuristic",
+       "type": "urn:tag:aesthetic_property:qloo"
+      },
+      {
+       "id": "urn:tag:aesthetic_property:qloo:wrap_around_geometry",
+       "name": "Wrap-Around Geometry",
+       "type": "urn:tag:aesthetic_property:qloo"
+      },
+      {
+       "id": "urn:tag:aesthetic_property:qloo:industrial_design",
+       "name": "Industrial Design",
+       "type": "urn:tag:aesthetic_property:qloo"
+      }
+     ]
+    },
+    {
+     "entity_id": "E8EAC35C-5E10-4EF5-B1E9-E1B036547122",
+     "name": "Bolle\u0301",
+     "type": "urn:entity",
+     "subtype": "urn:entity:brand",
+     "popularity": 0.5522706853587835,
+     "properties": {
+      "description": "Established in 1888, this French brand has a long history of engineering high-performance sunglasses, goggles, and helmets for professional athletes and outdoor enthusiasts. It focuses on integrating advanced optical and protective technologies into gear designed for demanding environments like mountains and roads. With a commitment to innovation, the brand serves a wide range of active individuals who require reliability during extreme sports. It occupies a premium position in the market by balancing technical excellence with a legacy of heritage design.",
+      "short_description": "Boll\u00e9 is a French brand specializing in technologically advanced sunglasses, goggles, and helmets for sports and safety since 1888.",
+      "keywords": [
+       "Performance",
+       "Optics",
+       "Protection",
+       "Cycling",
+       "Skiing"
+      ]
+     },
+     "query": {
+      "affinity": 0.9958958648201545
+     },
+     "tags": [
+      {
+       "id": "urn:tag:genre:brand:fashion",
+       "name": "Fashion",
+       "type": "urn:tag:genre:brand"
+      },
+      {
+       "id": "urn:tag:aesthetic_property:qloo:technical_design",
+       "name": "Technical Design",
+       "type": "urn:tag:aesthetic_property:qloo"
+      },
+      {
+       "id": "urn:tag:aesthetic_property:qloo:ergonomic_shapes",
+       "name": "Ergonomic Shapes",
+       "type": "urn:tag:aesthetic_property:qloo"
+      },
+      {
+       "id": "urn:tag:aesthetic_property:qloo:performance_focused_materials",
+       "name": "Performance-Focused Materials",
+       "type": "urn:tag:aesthetic_property:qloo"
+      },
+      {
+       "id": "urn:tag:aesthetic_property:qloo:sleek_industrial_finish",
+       "name": "Sleek Industrial Finish",
+       "type": "urn:tag:aesthetic_property:qloo"
+      },
+      {
+       "id": "urn:tag:lifestyle:qloo:professional_sports_achievement",
+       "name": "Professional Sports Achievement",
+       "type": "urn:tag:lifestyle:qloo"
+      }
+     ]
+    },
+    {
+     "entity_id": "19B4DEFA-6AE7-44B0-B85F-1222EBECF962",
+     "name": "Gore\u00ae Wear",
+     "type": "urn:entity",
+     "subtype": "urn:entity:brand",
+     "popularity": 0.7425200454306589,
+     "properties": {
+      "description": "Established to support endurance athletes, this brand leverages proprietary membrane technologies to deliver high-performance apparel for running and cycling. Known for its commitment to durable, weather-resistant protection, it serves a dedicated community of athletes operating in challenging environments. The brand maintains a reputation for rigorous technical innovation and consistent performance across its product range. Its offerings are designed to ensure comfort during intense physical activity, regardless of external weather conditions.",
+      "short_description": "GOREWEAR is a premium sports gear brand specializing in durable, high-performance apparel for endurance athletes, including cycling and running clothing featuring GORE-TEX technology.",
+      "keywords": [
+       "GORE-TEX",
+       "Technical Apparel",
+       "Endurance",
+       "Weather Protection",
+       "Innovation"
+      ]
+     },
+     "query": {
+      "affinity": 0.9914548198147988
+     },
+     "tags": [
+      {
+       "id": "urn:tag:genre:brand:fashion",
+       "name": "Fashion",
+       "type": "urn:tag:genre:brand"
+      },
+      {
+       "id": "urn:tag:aesthetic_property:qloo:functional",
+       "name": "Functional",
+       "type": "urn:tag:aesthetic_property:qloo"
+      },
+      {
+       "id": "urn:tag:aesthetic_property:qloo:minimalist",
+       "name": "Minimalist",
+       "type": "urn:tag:aesthetic_property:qloo"
+      },
+      {
+       "id": "urn:tag:aesthetic_property:qloo:ergonomic",
+       "name": "Ergonomic",
+       "type": "urn:tag:aesthetic_property:qloo"
+      },
+      {
+       "id": "urn:tag:aesthetic_property:qloo:streamlined",
+       "name": "Streamlined",
+       "type": "urn:tag:aesthetic_property:qloo"
+      },
+      {
+       "id": "urn:tag:aesthetic_property:qloo:high_visibility",
+       "name": "High-Visibility",
+       "type": "urn:tag:aesthetic_property:qloo"
+      }
+     ]
+    }
+   ]
+  }
+ }
+}

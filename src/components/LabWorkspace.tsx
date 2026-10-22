@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 
 import { getMutationCandidates } from "@/lib/demo-data";
+import { classifyExplorationOutcome, type ExplorationFeedback } from "@/lib/exploration-feedback";
 import {
   clearDraft,
   clearResult,
@@ -23,9 +24,11 @@ import type {
 } from "@/lib/types";
 
 import { AgentTracePanel } from "./AgentTracePanel";
+import { AblationPanel } from "./AblationPanel";
+import { EvidenceDecisionsPanel } from "./EvidenceDecisionsPanel";
 import { ConceptCards } from "./ConceptCards";
 import { CulturalNetwork } from "./CulturalNetwork";
-import { DemoBanner } from "./DemoBanner";
+import { DemoBanner, LiveBanner } from "./DemoBanner";
 import { DiscoveryView } from "./DiscoveryView";
 import { EmptyState, ErrorState, LoadingState } from "./StatusBlocks";
 import { EvidencePanel } from "./EvidencePanel";
@@ -59,7 +62,10 @@ export function LabWorkspace() {
   const [newEntityId, setNewEntityId] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [explorationFeedback, setExplorationFeedback] = useState<ExplorationFeedback | null>(null);
   const [storageReady, setStorageReady] = useState(false);
+  // Live Qloo mode is an explicit opt-in via ?live=1 so a public/demo visit can never spend Qloo calls.
+  const [liveRequested, setLiveRequested] = useState(false);
 
   useEffect(() => {
     const draft = loadDraft();
@@ -68,6 +74,7 @@ export function LabWorkspace() {
 
     // Defer so hydration sync is not a synchronous setState-in-effect cascade.
     queueMicrotask(() => {
+      setLiveRequested(new URLSearchParams(window.location.search).get("live") === "1");
       if (draft?.request) {
         setRequest({
           ...DEFAULT_REQUEST,
@@ -97,6 +104,7 @@ export function LabWorkspace() {
 
   const goTo = (next: LabStage) => {
     setError(null);
+    setExplorationFeedback(null);
     setStage(next);
   };
 
@@ -112,21 +120,44 @@ export function LabWorkspace() {
     setReplaceEntityId("");
     setNewEntityId("");
     setError(null);
+    setExplorationFeedback(null);
     setStage("landing");
   };
 
   const runExploration = async () => {
     setIsLoading(true);
     setError(null);
+    setExplorationFeedback(null);
     try {
       const response = await fetch("/api/explore", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...request, mode: "demo" }),
+        body: JSON.stringify({ ...request, mode: liveRequested ? "live" : "demo" }),
       });
 
       if (!response.ok) {
         const body = (await response.json()) as ApiErrorBody;
+        const expected = response.status === 422
+          ? classifyExplorationOutcome(body.code, liveRequested ? "live" : "demo")
+          : null;
+        if (expected) {
+          setResult(null);
+          clearResult();
+          setSelectedConcept(null);
+          setMutationBaseline(null);
+          setLastMutation(null);
+          setHighlightEvidence([]);
+          setExplorationFeedback({
+            ...expected,
+            diagnostic:
+              body.code === "CREATIVE_QUALITY_REJECTED" &&
+              typeof body.details === "string"
+                ? body.details.slice(0, 1600)
+                : undefined,
+          });
+          setStage("explore");
+          return;
+        }
         throw new Error(body.error || "Exploration failed.");
       }
 
@@ -148,6 +179,15 @@ export function LabWorkspace() {
 
   const openCreativeJourney = () => {
     if (!result) return;
+
+    window.sessionStorage.setItem(
+      "cfl-creative-journey-context-v2",
+      JSON.stringify({
+        version: 2,
+        exploration: result,
+        selectedConceptId: selectedConcept?.id ?? result.concepts[0]?.id ?? null,
+      }),
+    );
 
     window.sessionStorage.setItem(
       "cfl-creative-journey-request",
@@ -235,8 +275,25 @@ export function LabWorkspace() {
 
       {stage !== "landing" ? (
         <div className="mb-6">
-          <DemoBanner />
+          {(result ? result.mode === "live" : liveRequested) ? <LiveBanner /> : <DemoBanner />}
         </div>
+      ) : null}
+
+      {explorationFeedback && stage === "explore" ? (
+        <section role="status" aria-live="polite" className="mb-6 rounded-2xl border border-amber-400/35 bg-amber-950/20 p-5">
+          <h2 className="text-lg font-semibold text-amber-200">{explorationFeedback.heading}</h2>
+          <p className="mt-2 text-sm leading-relaxed text-slate-200">{explorationFeedback.explanation}</p>
+          <p className="mt-2 text-sm text-slate-300">{explorationFeedback.suggestion}</p>
+          {explorationFeedback.diagnostic ? (
+            <p className="mt-3 whitespace-pre-wrap break-words rounded-lg border border-amber-400/20 bg-black/20 p-3 text-xs leading-relaxed text-amber-100">
+              {explorationFeedback.diagnostic}
+            </p>
+          ) : null}
+          
+          <button type="button" onClick={() => setExplorationFeedback(null)} className="mt-4 rounded-lg border border-slate-500 px-4 py-2 text-sm text-white hover:border-cyan-300">
+            Revise exploration brief
+          </button>
+        </section>
       ) : null}
 
       {error ? (
@@ -256,6 +313,7 @@ export function LabWorkspace() {
             onChange={setRequest}
             onSubmit={runExploration}
             isLoading={isLoading}
+            live={liveRequested}
           />
           <div className="space-y-4">
             {isLoading ? (
@@ -308,12 +366,27 @@ export function LabWorkspace() {
             <button
               type="button"
               onClick={openCreativeJourney}
-              className="rounded-xl bg-cyan-400 px-5 py-3 font-semibold text-slate-950 transition hover:bg-cyan-300"
+              disabled={result?.mode === "live"}
+              title={result?.mode === "live" ? "Creative Journey currently supports demo data only." : undefined}
+              className="rounded-xl bg-cyan-400 px-5 py-3 font-semibold text-slate-950 transition hover:bg-cyan-300 disabled:cursor-not-allowed disabled:opacity-40"
             >
-              Explore in Creative Journey →
+              {result?.mode === "live" ? "Creative Journey: demo data only" : "Explore in Creative Journey →"}
             </button>
           </div>
         </div>
+        <section role="status" aria-label="Creative engine verification status" className="rounded-2xl border border-slate-500/40 bg-slate-900/80 p-4">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="rounded-full border border-cyan-400/40 px-3 py-1 text-xs font-semibold text-cyan-200">
+              {result.agentTrace?.engine === "creative-llm-v1" ? "Generative creative pipeline" : "Deterministic exploration"}
+            </span>
+            <span className="text-xs text-slate-300">{result.mode === "demo" ? "Demo / simulated cultural data" : "Live cultural data"}</span>
+          </div>
+          <p className="mt-2 text-sm leading-relaxed text-slate-300">
+            {result.agentTrace?.engine === "creative-llm-v1"
+              ? "Creative Fidelity Triage is enabled for model-generated concepts. Visible concepts passed provisional checks only; semantic and cultural verification remains necessary."
+              : "This run uses the deterministic engine, not autonomous generative creativity. Fidelity Triage applies to the optional generative pipeline and has not evaluated these deterministic concepts."}
+          </p>
+        </section>
         <ConceptCards
               concepts={result.concepts}
               selectedId={selectedConcept?.id}
@@ -321,6 +394,14 @@ export function LabWorkspace() {
               onOpenMutation={openMutation}
               onSelectEvidence={setHighlightEvidence}
             />
+
+            {result.mode === "live" && result.concepts[0]?.spec ? (
+              <EvidenceDecisionsPanel concept={result.concepts[0]} />
+            ) : null}
+
+            {result.mode === "live" && result.concepts[0]?.spec ? (
+              <AblationPanel concept={result.concepts[0]} request={result.request} />
+            ) : null}
 
             {lastMutation && mutationBaseline ? (
               <MutationComparison
