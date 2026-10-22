@@ -138,7 +138,7 @@ describe("direct API requests are rejected without the server's explicit yes", (
 
 describe("the public status endpoint", () => {
   it("reports unavailable with no configuration and exposes no secret", async () => {
-    const res = await statusGet();
+    const res = await statusGet(new Request("http://localhost/api/live/status"));
     const json = await res.json();
     expect(json.exploration.available).toBe(false);
     expect(json.comparison.available).toBe(false);
@@ -146,7 +146,7 @@ describe("the public status endpoint", () => {
   });
   it("reports available only when the server is configured, without echoing the key", async () => {
     process.env.QLOO_LIVE_ENABLED = "true"; process.env.QLOO_API_KEY = "SECRET-KEY-123";
-    const text = JSON.stringify(await (await statusGet()).json());
+    const text = JSON.stringify(await (await statusGet(new Request("http://localhost/api/live/status"))).json());
     expect(JSON.parse(text).exploration.available).toBe(true);
     expect(text).not.toMatch(/SECRET/);
   });
