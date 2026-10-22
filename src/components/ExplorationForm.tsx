@@ -11,6 +11,10 @@ interface ExplorationFormProps {
   onSubmit: () => void;
   isLoading: boolean;
   live?: boolean;
+  /** True while the server has not yet confirmed Live availability: the form cannot submit. */
+  blocked?: boolean;
+  /** Live was asked for in the URL but the server reports it unavailable: the form runs Demo. */
+  liveUnavailable?: boolean;
 }
 
 export function ExplorationForm({
@@ -19,6 +23,8 @@ export function ExplorationForm({
   onSubmit,
   isLoading,
   live = false,
+  blocked = false,
+  liveUnavailable = false,
 }: ExplorationFormProps) {
   const update = <K extends keyof ExplorationRequest>(
     key: K,
@@ -42,10 +48,12 @@ export function ExplorationForm({
             Frame a creative objective and cultural interest.{" "}
             {live
               ? "Live Mode queries the real Qloo API (a small, capped number of requests per run)."
-              : "Demo Mode runs entirely on fictional sample data."}
+              : liveUnavailable
+                ? "Live Mode is unavailable on this server. Demo Mode runs entirely on fictional sample data."
+                : "Demo Mode runs entirely on fictional sample data."}
           </p>
         </div>
-        <span className={live ? "badge" : "badge badge-demo"}>{live ? "Live Mode" : "Demo Mode"}</span>
+        <span className={live ? "badge" : "badge badge-demo"}>{live ? "Live Mode" : liveUnavailable ? "Live unavailable · Demo" : "Demo Mode"}</span>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
@@ -122,6 +130,7 @@ export function ExplorationForm({
           className="btn btn-primary"
           disabled={
             isLoading ||
+            blocked ||
             !value.creativeObjective.trim() ||
             !value.culturalInterest.trim()
           }

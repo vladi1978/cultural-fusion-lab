@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getValidationBudget, ValidationBudgetError, type ValidationBudget } from "@/lib/validation-session";
 import { createAnthropicCreativeModel, isCreativeLlmEnabled } from "@/lib/agent/creative/model";
 import { AblationError, runAblation } from "@/lib/agent/ablation/ablation";
+import { getLiveAvailability } from "@/lib/live-availability";
 import type { CulturalEntity, ExplorationRequest } from "@/lib/types";
 
 /**
@@ -16,6 +17,15 @@ const isObj = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 
 const str = (v: unknown): v is string => typeof v === "string" && v.length > 0 && v.length < 6000;
 
 export async function POST(req: Request) {
+  // Fail closed before reading the body: explicit flags and an existing model credential, from the server only.
+  const gate = getLiveAvailability().comparison;
+  if (!gate.available) {
+    const flagOff = process.env.CFL_ABLATION_ENABLED?.trim().toLowerCase() !== "true";
+    return NextResponse.json(
+      { error: flagOff ? "Ablation is disabled on this server." : "The creative model is not enabled on this server.", code: flagOff ? "ABLATION_DISABLED" : "CREATIVE_MODEL_DISABLED" },
+      { status: flagOff ? 403 : 503 },
+    );
+  }
   if (process.env.CFL_ABLATION_ENABLED?.trim().toLowerCase() !== "true") {
     return NextResponse.json({ error: "Ablation is disabled on this server.", code: "ABLATION_DISABLED" }, { status: 403 });
   }

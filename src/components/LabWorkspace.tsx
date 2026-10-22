@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 
 import { getMutationCandidates } from "@/lib/demo-data";
 import { classifyExplorationOutcome, type ExplorationFeedback } from "@/lib/exploration-feedback";
+import { parseLiveAvailability, resolveLiveUi, type LiveAvailability } from "@/lib/live-availability";
 import {
   clearDraft,
   clearResult,
@@ -28,7 +29,7 @@ import { AblationPanel } from "./AblationPanel";
 import { EvidenceDecisionsPanel } from "./EvidenceDecisionsPanel";
 import { ConceptCards } from "./ConceptCards";
 import { CulturalNetwork } from "./CulturalNetwork";
-import { DemoBanner, LiveBanner } from "./DemoBanner";
+import { DemoBanner, LiveBanner, LiveUnavailableBanner } from "./DemoBanner";
 import { DiscoveryView } from "./DiscoveryView";
 import { EmptyState, ErrorState, LoadingState } from "./StatusBlocks";
 import { EvidencePanel } from "./EvidencePanel";
@@ -66,6 +67,9 @@ export function LabWorkspace() {
   const [storageReady, setStorageReady] = useState(false);
   // Live Qloo mode is an explicit opt-in via ?live=1 so a public/demo visit can never spend Qloo calls.
   const [liveRequested, setLiveRequested] = useState(false);
+  // Live is active only when the SERVER says so. The URL parameter alone never enables it (fail closed).
+  const [liveReport, setLiveReport] = useState<LiveAvailability | "pending" | "error">("pending");
+  const liveUi = resolveLiveUi(liveRequested ? "1" : null, liveReport);
 
   useEffect(() => {
     const draft = loadDraft();
@@ -91,6 +95,16 @@ export function LabWorkspace() {
       setStorageReady(true);
     });
   }, []);
+
+  useEffect(() => {
+    if (!liveRequested) return;
+    let cancelled = false;
+    fetch("/api/live/status", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error("status"))))
+      .then((raw) => { if (!cancelled) setLiveReport(parseLiveAvailability(raw)); })
+      .catch(() => { if (!cancelled) setLiveReport("error"); });
+    return () => { cancelled = true; };
+  }, [liveRequested]);
 
   useEffect(() => {
     if (!storageReady) return;
@@ -132,13 +146,13 @@ export function LabWorkspace() {
       const response = await fetch("/api/explore", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...request, mode: liveRequested ? "live" : "demo" }),
+        body: JSON.stringify({ ...request, mode: liveUi.liveActive ? "live" : "demo" }),
       });
 
       if (!response.ok) {
         const body = (await response.json()) as ApiErrorBody;
         const expected = response.status === 422
-          ? classifyExplorationOutcome(body.code, liveRequested ? "live" : "demo")
+          ? classifyExplorationOutcome(body.code, liveUi.liveActive ? "live" : "demo")
           : null;
         if (expected) {
           setResult(null);
@@ -275,7 +289,15 @@ export function LabWorkspace() {
 
       {stage !== "landing" ? (
         <div className="mb-6">
-          {(result ? result.mode === "live" : liveRequested) ? <LiveBanner /> : <DemoBanner />}
+          {result ? (
+            result.mode === "live" ? <LiveBanner /> : <DemoBanner />
+          ) : liveUi.state === "checking" || liveUi.state === "unavailable" ? (
+            <LiveUnavailableBanner state={liveUi.state} reason={liveUi.reason} />
+          ) : liveUi.liveActive ? (
+            <LiveBanner />
+          ) : (
+            <DemoBanner />
+          )}
         </div>
       ) : null}
 
@@ -313,7 +335,9 @@ export function LabWorkspace() {
             onChange={setRequest}
             onSubmit={runExploration}
             isLoading={isLoading}
-            live={liveRequested}
+            live={liveUi.liveActive}
+            blocked={liveUi.state === "checking"}
+            liveUnavailable={liveUi.state === "unavailable"}
           />
           <div className="space-y-4">
             {isLoading ? (

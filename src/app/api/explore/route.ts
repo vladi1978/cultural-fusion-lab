@@ -8,6 +8,7 @@ import {
   runExplorationAgent,
 } from "@/lib/agent";
 import { isQlooConfigured } from "@/lib/qloo/adapter";
+import { getLiveAvailability } from "@/lib/live-availability";
 import { QlooError, toApiErrorPayload } from "@/lib/qloo/errors";
 import {
   isLiveModeAllowed,
@@ -118,6 +119,16 @@ export async function POST(request: Request) {
     if (exploration.mode === "demo") {
       const result = await runExplorationAgent(exploration, { fidelityPolicy: "triage" });
       return NextResponse.json(result);
+    }
+
+    // Fail closed, first: Live runs only when the server explicitly enables it and holds the credentials.
+    // The request body's "mode" is only a request; it never grants anything. Checked before any budget is touched.
+    const liveGate = getLiveAvailability().exploration;
+    if (!liveGate.available) {
+      return NextResponse.json<ApiErrorBody>(
+        { error: `${liveGate.reason} Use Demo Mode.`, code: "QLOO_LIVE_DISABLED", details: "Live collection is locked on this server." },
+        { status: 503 },
+      );
     }
 
     // Shared validation session (opt-in): one live exploration per session, duplicates rejected,

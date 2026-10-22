@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { AgentError, runMutationAgent } from "@/lib/agent";
 import { isQlooConfigured } from "@/lib/qloo/adapter";
+import { getLiveAvailability } from "@/lib/live-availability";
 import { QlooError, toApiErrorPayload } from "@/lib/qloo/errors";
 import { isLiveModeAllowed } from "@/lib/qloo/live-gate";
 import type {
@@ -118,6 +119,14 @@ export async function POST(request: Request) {
     if (mutation.mode === "demo") {
       const result = await runMutationAgent(mutation);
       return NextResponse.json(result);
+    }
+
+    const liveGate = getLiveAvailability().exploration;
+    if (!liveGate.available) {
+      return NextResponse.json<ApiErrorBody>(
+        { error: `${liveGate.reason} Use Demo Mode.`, code: "QLOO_LIVE_DISABLED", details: "Live access is locked on this server." },
+        { status: 503 },
+      );
     }
 
     if (!isLiveModeAllowed()) {
